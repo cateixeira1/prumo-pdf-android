@@ -55,7 +55,9 @@ testes rodando no GitHub e o APK publicado em Releases ("ultima-versao").
    Drive, OneDrive, Dropbox, outras) para ver qual deixa o Prumo usar uma pasta inteira; sincronização com
    iPhone e Windows pelo `.prumo/library.json`; cópia de segurança e restauração no mesmo formato; a
    biblioteca aparecendo no app Arquivos do Android.
-6. **Converter, comprimir e páginas curvas (0.6.0)**: fotos e imagens em PDF; texto e HTML; Word/Excel/
+6. **Escanear, converter, comprimir e páginas curvas (0.6.0)**: escanear com a câmera (como no iPhone;
+   CameraX com recorte e correção de perspectiva no aparelho, sem o scanner do Google Play, que depende
+   dos serviços do Google); fotos e imagens em PDF; texto e HTML; Word/Excel/
    PowerPoint (a definir: o Android não tem o Office para converter, e cada caminho tem limites);
    comprimir médio e alto com as mesmas regras; correção de curvatura com o UVDoc.
 7. **Segurança e assinatura (0.7.0)**: bloqueio do app (digital, rosto ou PIN do aparelho), proteger e
