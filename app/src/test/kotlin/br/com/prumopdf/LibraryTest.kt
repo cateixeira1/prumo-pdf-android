@@ -229,6 +229,57 @@ class LibraryTest {
     }
 
     @Test
+    fun modifyKeepsThePreviousVersionForUndo() {
+        pdf("A.pdf", "versão 1")
+        val lib = lib()
+        val id = lib.items[0].id
+        lib.modify(id, { 2 }) { _, out -> out.writeText("%PDF-1.4\n% versão 2\n") }
+        assertTrue(File(root, "A.pdf").readText().contains("versão 2"))
+        assertTrue(lib.canUndo(lib.item(id)!!))
+        lib.undo(id)
+        assertTrue(File(root, "A.pdf").readText().contains("versão 1"))
+        assertFalse(lib.item(id)!!.meta.hasUndo)
+        assertTrue(root.listFiles()!!.none { it.name.startsWith(".") && it.name.endsWith(".pdf") })
+    }
+
+    @Test
+    fun modifyKeepsTheOriginalWhenTheResultCannotBeChecked() {
+        pdf("A.pdf", "original")
+        val lib = lib()
+        val id = lib.items[0].id
+        try {
+            lib.modify(id, { null }) { _, out -> out.writeText("lixo") }
+            throw AssertionError("deveria recusar")
+        } catch (_: UserError) {
+        }
+        assertTrue(File(root, "A.pdf").readText().contains("original"))
+        assertFalse(lib.canUndo(lib.item(id)!!))
+    }
+
+    @Test
+    fun saveNewUsesAFreeName() {
+        pdf("Pasta/Laudo - Parte 1.pdf")
+        val lib = lib()
+        val created = lib.saveNew("Pasta", "Laudo - Parte 1", { 1 }) { it.writeText("%PDF-1.4\n") }
+        assertEquals("Pasta/Laudo - Parte 1 (2).pdf", created.relativePath)
+    }
+
+    @Test
+    fun analysisFeedsSearchAndTheOcrList() {
+        pdf("Escaneado.pdf")
+        pdf("Digital.pdf")
+        val lib = lib()
+        val scan = lib.itemAt("Escaneado.pdf")!!
+        val digital = lib.itemAt("Digital.pdf")!!
+        lib.applyAnalysis(scan.id, "x", br.com.prumopdf.core.Analysis(3, false, ocrPages = listOf(1, 2, 3)))
+        lib.applyAnalysis(digital.id, "y", br.com.prumopdf.core.Analysis(2, false, text = "Cláusula DÉCIMA do contrato"))
+        assertEquals(listOf(scan.id), lib.items(DocList.PENDING_OCR).map { it.id })
+        assertEquals(listOf(digital.id), lib.search("clausula decima").map { it.id })
+        // o texto fica guardado para a próxima vez
+        assertEquals(listOf(digital.id), lib().search("clausula").map { it.id })
+    }
+
+    @Test
     fun namesAndOrder() {
         assertEquals("a-b-c", Library.sanitize("a/b:c.pdf"))
         assertEquals("Documento", Library.sanitize("..."))

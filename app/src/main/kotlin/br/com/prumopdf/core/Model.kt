@@ -16,6 +16,8 @@ data class DocMeta(
     val signature: String? = null,       // tamanho + data; quando muda, o arquivo é analisado de novo
     val lastOpened: Long? = null,        // milissegundos desde 1970
     val added: Long? = null,
+    val ocrPages: List<Int>? = null,     // páginas (começando em 1) sem texto selecionável
+    val hasUndo: Boolean = false,        // há uma versão anterior guardada para o "Desfazer"
 )
 
 data class PdfItem(
@@ -56,8 +58,13 @@ data class LibrarySnapshot(
     val revision: Long = 0,
 )
 
-/** O que a análise de um PDF descobriu (número de páginas, senha). */
-data class Analysis(val pageCount: Int?, val locked: Boolean)
+/** O que a análise de um PDF descobriu: páginas, senha, páginas sem texto e o texto (para a busca). */
+data class Analysis(
+    val pageCount: Int?,
+    val locked: Boolean,
+    val ocrPages: List<Int> = emptyList(),
+    val text: String = "",
+)
 
 /** Erro com mensagem para mostrar ao usuário (já traduzida). */
 class UserError(message: String) : Exception(message)

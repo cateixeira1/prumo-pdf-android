@@ -2,7 +2,10 @@ package br.com.prumopdf
 
 import android.graphics.Bitmap
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -85,6 +88,26 @@ class ScreenshotTest {
                     compose.onNodeWithText("Clientes").performClick()
                     compose.waitUntilAtLeastOneExists(hasText("Ana Souza"), 5000)
                     shot(lang, 6, "pasta")
+                }
+                ActivityScenario.launch(MainActivity::class.java).use { sc ->
+                    var vm: AppViewModel? = null
+                    sc.onActivity { vm = androidx.lifecycle.ViewModelProvider(it)[AppViewModel::class.java] }
+                    val contract = lib.itemAt("Contrato de locação.pdf")!!
+                    InstrumentationRegistry.getInstrumentation().runOnMainSync { vm!!.open(Route.Organize(contract.id)) }
+                    compose.waitUntilAtLeastOneExists(hasTestTag("cell-3"), 8000)
+                    compose.onNodeWithTag("cell-1", useUnmergedTree = true).performClick()
+                    shot(lang, 7, "organizar")
+                    InstrumentationRegistry.getInstrumentation().runOnMainSync {
+                        vm!!.back()
+                        vm!!.open(Route.Reader(contract.id))
+                    }
+                    compose.waitUntilAtLeastOneExists(hasTestTag("searchToggle"), 8000)
+                    compose.onNodeWithTag("searchToggle").performClick()
+                    compose.onNode(hasSetTextAction() and hasAnyAncestor(hasTestTag("readerSearch"))).performTextInput("clausula decima")
+                    compose.waitUntilAtLeastOneExists(hasText(br.com.prumopdf.i18n.LF("{} de {}", 1, 1)), 8000)
+                    shot(lang, 8, "busca")
+                    compose.onNodeWithTag("thumbsToggle").performClick()
+                    shot(lang, 9, "miniaturas")
                 }
             }
         } finally {

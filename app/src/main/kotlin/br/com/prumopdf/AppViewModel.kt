@@ -14,6 +14,10 @@ import androidx.core.content.FileProvider
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import br.com.prumopdf.core.DocList
+import br.com.prumopdf.core.InsertPosition
+import br.com.prumopdf.core.SplitPlan
+import br.com.prumopdf.core.PageSelection
+import br.com.prumopdf.core.PageEntry
 import br.com.prumopdf.core.Library
 import br.com.prumopdf.core.PdfItem
 import br.com.prumopdf.core.TrashBatch
@@ -21,7 +25,7 @@ import br.com.prumopdf.core.UserError
 import br.com.prumopdf.i18n.L
 import br.com.prumopdf.i18n.LF
 import br.com.prumopdf.i18n.LN
-import br.com.prumopdf.platform.PdfPages
+import br.com.prumopdf.pdf.PdfOps
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -42,18 +46,27 @@ sealed interface Route {
     data class Reader(val id: String) : Route {
         override val isDetail get() = true
     }
+    data class Organize(val id: String) : Route {
+        override val isDetail get() = true
+    }
+    /** Escolher páginas de um PDF para remover ou extrair. */
+    data class PickPages(val id: String, val mode: PageMode) : Route {
+        override val isDetail get() = true
+    }
 }
+
+enum class PageMode { REMOVE, EXTRACT }
 
 /** Ferramentas da tela inicial (as mesmas do iPhone e do Windows). As perguntas passam por L() na hora de mostrar. */
 enum class Tool(val question: String, val ready: Boolean = false) {
     READ("Ler qual PDF?", ready = true), // i18n
     OCR("OCR de quais PDFs?"), // i18n
-    ORGANIZE("Organizar qual PDF?"), // i18n
-    INSERT("Incluir páginas em qual PDF?"), // i18n
-    REMOVE("Remover páginas de qual?"), // i18n
-    EXTRACT("Extrair páginas de qual?"), // i18n
-    SPLIT("Dividir qual PDF?"), // i18n
-    MERGE("Combinar PDFs"), // i18n
+    ORGANIZE("Organizar qual PDF?", ready = true), // i18n
+    INSERT("Incluir páginas em qual PDF?", ready = true), // i18n
+    REMOVE("Remover páginas de qual?", ready = true), // i18n
+    EXTRACT("Extrair páginas de qual?", ready = true), // i18n
+    SPLIT("Dividir qual PDF?", ready = true), // i18n
+    MERGE("Combinar PDFs", ready = true), // i18n
     CROP("Cortar ou girar qual PDF?"), // i18n
     NUMBER("Numerar qual PDF?"), // i18n
     SIGN("Assinar qual PDF?"), // i18n
@@ -61,7 +74,13 @@ enum class Tool(val question: String, val ready: Boolean = false) {
     CONVERT("Converter em PDF"), // i18n
 }
 
-data class Notice(val text: String, val undo: (() -> Unit)? = null, val id: Long = System.nanoTime())
+/** Aviso na parte de baixo da tela, com uma ação opcional ("Desfazer", "Abrir"). */
+data class Notice(
+    val text: String,
+    val action: (() -> Unit)? = null,
+    val actionLabel: String? = null,
+    val id: Long = System.nanoTime(),
+)
 
 class AppViewModel(app: Application) : AndroidViewModel(app) {
     private val prumo = app as PrumoApplication
@@ -90,7 +109,10 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     val current: Route get() = stack.last()
 
-    fun open(route: Route, wide: Boolean = false) {
+    /** Tela larga (duas colunas), informado pela interface. */
+    var wide = false
+
+    fun open(route: Route, wide: Boolean = this.wide) {
         if (wide) {
             // Em tela larga só existe um documento aberto à direita; abrir outra lista fecha o documento.
             if (route.isDetail) {
@@ -128,7 +150,11 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     // region Mensagens
 
     fun say(text: String, undo: (() -> Unit)? = null) {
-        notice = Notice(text, undo)
+        notice = Notice(text, undo, if (undo != null) L("Desfazer") else null)
+    }
+
+    fun sayWithAction(text: String, label: String, action: () -> Unit) {
+        notice = Notice(text, action, label)
     }
 
     fun clearNotice(n: Notice) {
@@ -160,7 +186,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             if (pending.isEmpty()) return@launch
             library.setAnalyzing(true)
             for (item in pending) {
-                val a = PdfPages.analyze(item.file)
+                val a = PdfOps.analyze(item.file)
                 library.applyAnalysis(item.id, Library.signature(item.size, item.modified), a)
             }
             library.setAnalyzing(false)
@@ -179,6 +205,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     // region Ações
 
     fun toggleFavorite(item: PdfItem) = run { io { library.toggleFavorite(item.id) } }
+
+    fun setFavorite(items: Collection<PdfItem>, value: Boolean) = run { io { library.setFavorite(items.map { it.id }, value) } }
 
     fun rename(item: PdfItem, name: String) = run {
         io { library.rename(item.id, name) }
@@ -270,6 +298,109 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         intent.clipData = ClipData.newRawUri("", uris[0]).also { c -> uris.drop(1).forEach { c.addItem(ClipData.Item(it)) } }
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         return Intent.createChooser(intent, null)
+    }
+
+    // endregion
+
+    // region Páginas (etapa 2)
+
+    /** Senhas digitadas nesta sessão, só na memória, para abrir PDFs com senha no leitor. */
+    val passwords = java.util.concurrent.ConcurrentHashMap<String, String>()
+
+    private fun changed(item: PdfItem) {
+        thumbnails.forget(item.id)
+        analyze()
+    }
+
+    private fun requireUnlocked(item: PdfItem) {
+        if (item.isLocked) throw UserError(L("Este PDF tem senha. Para fazer OCR, organizar ou dividir, crie antes uma cópia sem senha."))
+    }
+
+    /** Nova ordem, giros e exclusões feitos na tela "Organizar páginas". */
+    fun organize(item: PdfItem, entries: kotlin.collections.List<PageEntry>, then: () -> Unit = {}) = run {
+        requireUnlocked(item)
+        io { library.modify(item.id, PdfOps::pageCount) { src, out -> PdfOps.arrange(src, entries, out) } }
+        changed(item)
+        then()
+        say(L("Páginas reorganizadas. Use “Desfazer última alteração” se precisar.")) { undoChange(item) }
+    }
+
+    fun removePages(item: PdfItem, pages: kotlin.collections.List<Int>, then: () -> Unit = {}) = run {
+        requireUnlocked(item)
+        io { library.modify(item.id, PdfOps::pageCount) { src, out -> PdfOps.remove(src, pages, out) } }
+        changed(item)
+        then()
+        say(LN(pages.size, "1 página removida. Use “Desfazer” se precisar.", "{} páginas removidas. Use “Desfazer” se precisar.")) {
+            undoChange(item)
+        }
+    }
+
+    fun extractPages(item: PdfItem, pages: kotlin.collections.List<Int>, then: () -> Unit = {}) = run {
+        requireUnlocked(item)
+        val label = PageSelection.format(pages)
+        val name = if (label.length <= 40) LF("{} - págs. {}", item.name, label) else LF("{} - {} páginas", item.name, pages.size)
+        val created = io { library.saveNew(item.folder, name, PdfOps::pageCount) { PdfOps.extract(item.file, pages, it) } }
+        analyze()
+        then()
+        sayWithAction(LF("PDF criado: {}", created.name), L("Abrir")) { open(Route.Document(created.id)) }
+    }
+
+    fun split(item: PdfItem, parts: Int, then: () -> Unit = {}) = run {
+        requireUnlocked(item)
+        val count = item.pageCount ?: io { PdfOps.pageCount(item.file) } ?: throw UserError(L("Não foi possível abrir o PDF. O arquivo pode estar corrompido."))
+        val ranges = SplitPlan.ranges(count, parts)
+        io {
+            ranges.forEachIndexed { i, range ->
+                library.saveNew(item.folder, LF("{} - Parte {}", item.name, i + 1), PdfOps::pageCount) {
+                    PdfOps.extract(item.file, range.toList(), it)
+                }
+            }
+        }
+        analyze()
+        then()
+        say(sentences(LN(parts, "1 parte de {}", "{} partes de {}", item.name), L("O original não muda.")))
+    }
+
+    fun merge(items: kotlin.collections.List<PdfItem>, name: String, then: () -> Unit = {}) = run {
+        if (items.size < 2) throw UserError(L("Escolha pelo menos 2 PDFs."))
+        items.forEach { requireUnlocked(it) }
+        val folder = items.map { it.folder }.distinct().singleOrNull() ?: ""
+        val created = io {
+            library.saveNew(folder, name.ifBlank { L("PDF combinado") }, PdfOps::pageCount) { out -> PdfOps.merge(items.map { it.file }, out) }
+        }
+        analyze()
+        then()
+        sayWithAction(LF("PDF combinado: {}", created.name), L("Abrir")) { open(Route.Document(created.id)) }
+    }
+
+    fun insertPages(target: PdfItem, source: PdfItem, pages: kotlin.collections.List<Int>, position: InsertPosition, then: () -> Unit = {}) = run {
+        requireUnlocked(target)
+        requireUnlocked(source)
+        io { library.modify(target.id, PdfOps::pageCount) { src, out -> PdfOps.insert(src, source.file, pages, position, out) } }
+        changed(target)
+        then()
+        say(LN(pages.size, "1 página incluída em {}. Use “Desfazer” se precisar.", "{} páginas incluídas em {}. Use “Desfazer” se precisar.", target.name)) {
+            undoChange(target)
+        }
+    }
+
+    /** Volta o PDF para como estava antes da última mudança feita pelo Prumo. */
+    fun undoChange(item: PdfItem) = run {
+        io { library.undo(item.id) }
+        changed(item)
+        say(L("Última alteração desfeita."))
+    }
+
+    /** Cópia sem senha de um PDF com senha (o original continua como está). */
+    fun removePassword(item: PdfItem, password: String, then: (PdfItem) -> Unit = {}) = run {
+        val created = io {
+            library.saveNew(item.folder, LF("{} - sem senha", item.name), PdfOps::pageCount) { out ->
+                PdfOps.removePassword(item.file, password, out)
+            }
+        }
+        analyze()
+        then(created)
+        sayWithAction(LF("Cópia sem senha: {}", created.name), L("Abrir")) { open(Route.Document(created.id)) }
     }
 
     // endregion

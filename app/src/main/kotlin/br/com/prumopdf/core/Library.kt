@@ -37,6 +37,9 @@ class Library(
     private val lock = Any()
     private val metaFile = File(supportDir, "library.json")
     val trashDir = File(supportDir, "Trash")
+    val versionsDir = File(supportDir, "Versions")
+    val textDir = File(supportDir, "Text")
+    private val texts = HashMap<String, String>()
     internal var metas: MutableMap<String, DocMeta> = LinkedHashMap()
     internal val sync = SharedSync(this)
 
@@ -48,6 +51,8 @@ class Library(
     init {
         root.mkdirs()
         supportDir.mkdirs()
+        versionsDir.mkdirs()
+        textDir.mkdirs()
         loadMeta()
         reload()
     }
@@ -106,6 +111,7 @@ class Library(
             newItems += PdfItem(meta.id, file, rel, sm.first, sm.second, meta)
         }
         val changed = newMetas != metas
+        for (id in metas.keys) if (id !in newMetas) forgetFiles(id)
         metas = newMetas
         sync.knownPaths += newMetas.values.map { it.path.lowercase() }
         val sortedDirs = dirs.sortedWith(naturalOrder)
@@ -120,6 +126,13 @@ class Library(
         }
         publish(newItems.sortedByDescending { it.modified }, folderItems)
         if (changed) saveMeta()
+    }
+
+    /** Apaga o que o Prumo guarda de um PDF que saiu da biblioteca (versão anterior, texto). */
+    private fun forgetFiles(id: String) {
+        File(versionsDir, "$id.pdf").delete()
+        File(textDir, "$id.txt").delete()
+        texts.remove(id)
     }
 
     private fun publish(items: List<PdfItem>, folders: List<FolderItem> = this.folders, analyzing: Boolean? = null) {
@@ -150,7 +163,7 @@ class Library(
         val m = item.meta
         if (m.locked == true || m.isOCRResult) return false
         if (m.ocrCopyId != null && metas.containsKey(m.ocrCopyId)) return false
-        return m.pendingOCR
+        return m.pendingOCR || !m.ocrPages.isNullOrEmpty()
     }
 
     fun items(list: DocList): List<PdfItem> = when (list) {
@@ -166,11 +179,19 @@ class Library(
 
     fun count(list: DocList): Int = items(list).size
 
-    /** Busca pelo nome (a busca no texto dos PDFs chega com o motor de PDF, na etapa 2). */
+    /** Busca pelo nome e pelo texto dos PDFs (primeiro os que têm a busca no nome). */
     fun search(query: String, pool: List<PdfItem>? = null): List<PdfItem> {
         val q = fold(query)
         if (q.isEmpty()) return emptyList()
-        return (pool ?: items).filter { fold(it.name).contains(q) }
+        val source = pool ?: items
+        val byName = source.filter { fold(it.name).contains(q) }
+        val ids = byName.map { it.id }.toSet()
+        return byName + source.filter { it.id !in ids && text(it.id).contains(q) }
+    }
+
+    /** Texto do PDF já sem acentos e em minúsculas (guardado pela análise). */
+    private fun text(id: String): String = synchronized(texts) {
+        texts.getOrPut(id) { runCatching { File(textDir, "$id.txt").readText() }.getOrDefault("") }
     }
 
     // endregion
@@ -181,7 +202,15 @@ class Library(
 
     fun applyAnalysis(id: String, sig: String, analysis: Analysis?) = synchronized(lock) {
         val m = metas[id] ?: return@synchronized
-        metas[id] = m.copy(signature = sig, pageCount = analysis?.pageCount, locked = if (analysis?.locked == true) true else null)
+        metas[id] = m.copy(
+            signature = sig, pageCount = analysis?.pageCount, locked = if (analysis?.locked == true) true else null,
+            ocrPages = analysis?.ocrPages?.takeIf { it.isNotEmpty() },
+        )
+        if (analysis != null && !analysis.locked) {
+            val folded = fold(analysis.text)
+            runCatching { writeAtomic(File(textDir, "$id.txt"), folded) }
+            synchronized(texts) { texts[id] = folded }
+        }
         refreshItems()
     }
 
@@ -386,7 +415,7 @@ class Library(
             folderFile(folder).mkdirs()
             val dest = uniqueFile(folder, rel.substringAfterLast('/').removeSuffix(".pdf").removeSuffix(".PDF"))
             moveFile(src, dest)
-            if (meta != null && !metas.containsKey(meta.id)) metas[meta.id] = meta.copy(path = relativePath(dest))
+            if (meta != null && !metas.containsKey(meta.id)) metas[meta.id] = meta.copy(path = relativePath(dest), signature = null, hasUndo = false)
             n++
         }
         dir.deleteRecursively()
@@ -394,6 +423,68 @@ class Library(
         reload()
         n
     }
+
+    // region Mudar o próprio PDF (com "Desfazer") e criar PDFs novos
+
+    /**
+     * Muda o próprio arquivo: [change] grava o resultado no arquivo temporário que recebe. O resultado é
+     * conferido por [check] (número de páginas) antes de substituir o original, e a versão anterior fica
+     * guardada para o "Desfazer".
+     */
+    fun modify(id: String, check: (File) -> Int?, change: (src: File, out: File) -> Unit): PdfItem = synchronized(lock) {
+        val item = item(id) ?: throw UserError(L("O arquivo não existe mais."))
+        val tmp = File(item.file.parentFile, ".${item.id}.tmp.pdf")
+        try {
+            change(item.file, tmp)
+            val pages = check(tmp)
+            if (pages == null || pages <= 0) throw UserError(L("O PDF salvo não pôde ser conferido; nada foi alterado."))
+            val backup = File(versionsDir, "$id.pdf")
+            item.file.copyTo(backup, overwrite = true)
+            replaceFile(tmp, item.file)
+        } finally {
+            tmp.delete()
+        }
+        update(id) { it.copy(hasUndo = true, signature = null) }
+        saveMeta()
+        reload()
+        item(id)!!
+    }
+
+    fun canUndo(item: PdfItem): Boolean = item.meta.hasUndo && File(versionsDir, "${item.id}.pdf").exists()
+
+    /** Volta o arquivo para como estava antes da última mudança feita pelo Prumo. */
+    fun undo(id: String) = synchronized(lock) {
+        val item = item(id) ?: throw UserError(L("O arquivo não existe mais."))
+        val backup = File(versionsDir, "$id.pdf")
+        if (!backup.exists()) throw UserError(L("Não há alteração para desfazer."))
+        replaceFile(backup, item.file)
+        update(id) { it.copy(hasUndo = false, signature = null) }
+        saveMeta()
+        reload()
+    }
+
+    /**
+     * Cria um PDF novo na pasta: [write] grava no arquivo temporário que recebe; o nome final é livre
+     * ("Nome.pdf", "Nome (2).pdf"…).
+     */
+    fun saveNew(folder: String, baseName: String, check: (File) -> Int?, write: (File) -> Unit): PdfItem = synchronized(lock) {
+        folderFile(folder).mkdirs()
+        val dest = uniqueFile(folder, baseName)
+        val tmp = File(dest.parentFile, ".${dest.name}.part")
+        try {
+            write(tmp)
+            val pages = check(tmp)
+            if (pages == null || pages <= 0) throw UserError(L("Não foi possível salvar o PDF."))
+            replaceFile(tmp, dest)
+        } finally {
+            tmp.delete()
+        }
+        val rel = relativePath(dest)
+        reload()
+        itemAt(rel)!!
+    }
+
+    // endregion
 
     /** Apaga de vez o que foi excluído há mais de [days] dias. */
     fun purgeTrash(days: Int = 30) {
@@ -439,6 +530,13 @@ class Library(
                 n > 4 && String(head, 0, n, Charsets.ISO_8859_1).contains("%PDF-")
             }
         }.getOrDefault(false)
+
+        /** Troca o conteúdo de [dest] pelo de [src] (rename quando dá; senão cópia). */
+        internal fun replaceFile(src: File, dest: File) {
+            if (src.renameTo(dest)) return
+            src.copyTo(dest, overwrite = true)
+            src.delete()
+        }
 
         private fun moveFile(src: File, dest: File) {
             dest.parentFile?.mkdirs()
@@ -511,6 +609,8 @@ class Library(
             m.signature?.let { put("signature", it) }
             m.lastOpened?.let { put("lastOpened", it) }
             m.added?.let { put("added", it) }
+            m.ocrPages?.let { pages -> put("ocrPages", JsonArray(pages.map { JsonPrimitive(it) })) }
+            if (m.hasUndo) put("hasUndo", true)
         }
 
         // Leitura tolerante: campos novos em versões futuras não quebram os dados antigos.
@@ -530,6 +630,8 @@ class Library(
                 signature = str("signature"),
                 lastOpened = (o["lastOpened"] as? JsonPrimitive)?.longOrNull,
                 added = (o["added"] as? JsonPrimitive)?.longOrNull,
+                ocrPages = (o["ocrPages"] as? JsonArray)?.mapNotNull { (it as? JsonPrimitive)?.intOrNull },
+                hasUndo = bool("hasUndo") ?: false,
             )
         }
     }

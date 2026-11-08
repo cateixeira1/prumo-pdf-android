@@ -2,6 +2,11 @@ package br.com.prumopdf.ui
 
 import android.text.format.Formatter
 import androidx.compose.foundation.background
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.automirrored.filled.DriveFileMove
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -49,6 +54,8 @@ import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.FormatListNumbered
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Layers
+import androidx.compose.material.icons.filled.LockOpen
+import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.LibraryAdd
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.PhotoCamera
@@ -271,26 +278,97 @@ fun DocGridStatic(vm: AppViewModel, items: List<PdfItem>, showFolder: Boolean = 
 fun DocListScreen(vm: AppViewModel, snapshot: LibrarySnapshot, list: DocList, showBack: Boolean) {
     val actions = LocalActions.current
     val items = remember(snapshot.revision, list) { vm.library.items(list) }
+    var selecting by remember { mutableStateOf(false) }
+    val selected = remember { mutableStateListOf<String>() }
+    val grid = rememberLazyGridState()
+    val ranges = remember(items) { RangeSelection({ items.map { it.id } }, selected) }
+    LaunchedEffect(items) { selected.retainAll(items.map { it.id }.toSet()) }
+    BackHandler(enabled = selecting) {
+        selecting = false
+        selected.clear()
+    }
     Column(Modifier.fillMaxSize()) {
-        ScreenHeader(list.title(), showBack, { vm.back() })
+        ScreenHeader(list.title(), showBack, { vm.back() }) {
+            if (items.isNotEmpty()) {
+                TextButton(onClick = {
+                    selecting = !selecting
+                    selected.clear()
+                }, modifier = Modifier.testTag("selectMode")) { Text(if (selecting) L("Cancelar") else L("Selecionar")) }
+            }
+        }
         if (items.isEmpty()) {
             EmptyState(L("Nenhum PDF"))
         } else {
+            if (selecting) {
+                Text(
+                    L("Toque nos PDFs, ou deslize o dedo de lado sobre eles para marcar vários."),
+                    fontSize = 13.sp, color = Prumo.colors.secondaryText, modifier = Modifier.padding(horizontal = Dimens.margin, vertical = 4.dp),
+                )
+            }
+            val gridMod = Modifier.weight(1f).fillMaxWidth().testTag("docgrid")
             LazyVerticalGrid(
                 columns = GridCells.Adaptive(160.dp),
-                contentPadding = PaddingValues(start = Dimens.margin, end = Dimens.margin, bottom = 96.dp),
+                state = grid,
+                contentPadding = PaddingValues(start = Dimens.margin, end = Dimens.margin, bottom = if (selecting) 16.dp else 96.dp),
                 horizontalArrangement = Arrangement.spacedBy(Dimens.spacing),
                 verticalArrangement = Arrangement.spacedBy(Dimens.spacing),
-                modifier = Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.navigationBars).testTag("docgrid"),
+                modifier = if (selecting) gridMod.dragSelect(grid, ranges::start, ranges::range)
+                else gridMod.windowInsetsPadding(WindowInsets.navigationBars),
             ) {
                 items(items, key = { it.id }) { item ->
                     DocTile(
                         item, vm.thumbnails, needsOCR = vm.library.needsOCRAttention(item), showFolder = true,
+                        selection = if (selecting) item.id in selected else null,
                         onFavorite = { vm.toggleFavorite(item) }, menu = { actions.menuFor(item) },
-                    ) { actions.open(Route.Document(item.id)) }
+                    ) {
+                        if (selecting) {
+                            if (item.id in selected) selected.remove(item.id) else selected.add(item.id)
+                        } else {
+                            actions.open(Route.Document(item.id))
+                        }
+                    }
+                }
+            }
+            if (selecting) {
+                val chosen = items.filter { it.id in selected }
+                SelectionBar(chosen.size) {
+                    IconButton(onClick = { actions.merge(chosen) }, enabled = chosen.size >= 2, modifier = Modifier.testTag("selMerge")) {
+                        Icon(Icons.Filled.Layers, L("Combinar PDFs"))
+                    }
+                    IconButton(onClick = { actions.dialog = DialogState.Move(chosen) }, enabled = chosen.isNotEmpty()) {
+                        Icon(Icons.AutoMirrored.Filled.DriveFileMove, L("Mover para pasta"))
+                    }
+                    IconButton(onClick = { actions.share(chosen) }, enabled = chosen.isNotEmpty()) {
+                        Icon(Icons.Filled.Share, L("Compartilhar"))
+                    }
+                    IconButton(onClick = { vm.setFavorite(chosen, !chosen.all { it.meta.favorite }) }, enabled = chosen.isNotEmpty()) {
+                        Icon(Icons.Filled.Star, L("Favoritar"), tint = if (chosen.isNotEmpty()) Palette.yellow else Prumo.colors.placeholder)
+                    }
+                    IconButton(onClick = {
+                        vm.delete(chosen)
+                        selected.clear()
+                        selecting = false
+                    }, enabled = chosen.isNotEmpty()) {
+                        Icon(Icons.Filled.Delete, L("Excluir"), tint = if (chosen.isNotEmpty()) Palette.red else Prumo.colors.placeholder)
+                    }
                 }
             }
         }
+    }
+}
+
+@Composable
+fun SelectionBar(count: Int, actions: @Composable () -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().background(Prumo.colors.tile.copy(alpha = 0.7f)).windowInsetsPadding(WindowInsets.navigationBars)
+            .padding(horizontal = 8.dp, vertical = 4.dp).testTag("selectionBar"),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            LN(count, "1 selecionado", "{} selecionados"), fontSize = 14.sp, color = Prumo.colors.text,
+            modifier = Modifier.weight(1f).padding(start = 8.dp).testTag("selectionCount"),
+        )
+        actions()
     }
 }
 
@@ -405,26 +483,47 @@ fun DocumentScreen(vm: AppViewModel, snapshot: LibrarySnapshot, id: String, show
             }
         }
         Spacer(Modifier.height(Dimens.spacing * 2))
-        Tile(
-            L("Ler"), Icons.AutoMirrored.Filled.MenuBook, Palette.blue, Modifier.fillMaxWidth().testTag("read"),
-            enabled = !item.isLocked,
-        ) {
-            if (item.isLocked) actions.dialog = DialogState.NotReady(L("Com senha"))
-            else actions.open(Route.Reader(item.id))
+        Tile(L("Ler"), Icons.AutoMirrored.Filled.MenuBook, Palette.blue, Modifier.fillMaxWidth().testTag("read")) {
+            actions.open(Route.Reader(item.id))
+        }
+        if (item.isLocked) {
+            Spacer(Modifier.height(Dimens.spacing))
+            Tile(
+                L("Remover senha"), Icons.Filled.LockOpen, Palette.purple, Modifier.fillMaxWidth().testTag("removePassword"),
+                subtitle = L("Cria uma cópia sem senha"),
+            ) { actions.dialog = DialogState.RemovePassword(item) }
+        }
+        if (vm.library.canUndo(item)) {
+            Spacer(Modifier.height(Dimens.spacing))
+            Tile(
+                L("Desfazer última alteração"), Icons.AutoMirrored.Filled.Undo, Palette.gray, Modifier.fillMaxWidth().testTag("undoChange"),
+            ) { vm.undoChange(item) }
         }
         SectionTitle(L("Ferramentas"))
         val tools = listOf(
-            Tool.OCR, Tool.ORGANIZE, Tool.INSERT, Tool.REMOVE, Tool.EXTRACT, Tool.SPLIT,
-            Tool.CROP, Tool.NUMBER, Tool.SIGN, Tool.COMPRESS,
+            Tool.ORGANIZE, Tool.INSERT, Tool.REMOVE, Tool.EXTRACT, Tool.SPLIT, Tool.MERGE,
+            Tool.OCR, Tool.CROP, Tool.NUMBER, Tool.SIGN, Tool.COMPRESS,
         )
         TileGrid(tools.size) { i, mod ->
             val t = tools[i]
-            Tile(UiActions.toolTitle(t), toolIcon(t), Palette.indigo, mod, enabled = false) { actions.runTool(t) }
+            Tile(
+                UiActions.toolTitle(t), toolIcon(t), toolColor(t), mod.testTag("tool-${t.name}"), enabled = t.ready && !item.isLocked,
+            ) { actions.toolOn(t, item) }
         }
     }
 }
 
-private fun toolIcon(t: Tool): ImageVector = when (t) {
+fun toolColor(t: Tool): androidx.compose.ui.graphics.Color = when (t) {
+    Tool.READ, Tool.SIGN -> Palette.blue
+    Tool.OCR -> Palette.orange
+    Tool.ORGANIZE, Tool.MERGE -> Palette.purple
+    Tool.INSERT, Tool.COMPRESS, Tool.CONVERT -> Palette.teal
+    Tool.REMOVE -> Palette.red
+    Tool.SPLIT -> Palette.pink
+    Tool.EXTRACT, Tool.CROP, Tool.NUMBER -> Palette.indigo
+}
+
+fun toolIcon(t: Tool): ImageVector = when (t) {
     Tool.READ -> Icons.AutoMirrored.Filled.MenuBook
     Tool.OCR -> Icons.Filled.DocumentScanner
     Tool.ORGANIZE -> Icons.Filled.GridView

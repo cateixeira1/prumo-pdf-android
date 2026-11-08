@@ -11,7 +11,7 @@ aparelho, os mesmos arquivos e o mesmo formato de biblioteca, em telefones, tabl
 | Interface | **Jetpack Compose** + Material 3, com o visual do Prumo (cartões cinza, ícones coloridos) | Uma só interface que se adapta a telefone, tablet e dobrável |
 | Telas grandes e dobráveis | Classes de tamanho de janela + `androidx.window` (dobradiça e posturas) | Duas colunas (lista + documento) em tablet e dobrável aberto; nada cai sobre a dobradiça |
 | Ler e desenhar PDF, texto, busca, destaques | **PDFium** (o mesmo do Windows, via pypdfium2) | Mesmo resultado nos dois apps; o `PdfRenderer` do Android não abre PDF com senha antes do Android 15 e não tem busca nem seleção de texto nas versões antigas |
-| Gravar PDF (páginas, senha AES-256, otimizar, comprimir) | **qpdf** (o mesmo do Windows, via pikepdf) | Mesmo motor, mesmos arquivos; o código do qpdf já inclui um script para compilar com o NDK (`build-scripts/build-android-ndk`) |
+| Gravar PDF: senha AES-256, otimizar, comprimir (etapas 6 e 7) | **qpdf** (o mesmo do Windows, via pikepdf) | Mesmo motor, mesmos arquivos; o código do qpdf já inclui um script para compilar com o NDK (`build-scripts/build-android-ndk`) |
 | OCR | **Tesseract** (Tesseract4Android, Apache 2.0), os mesmos dados de idioma do Windows | Roda no aparelho, sem enviar nada. O ML Kit do Google foi descartado: a própria Google informa que ele envia dados de uso (aparelho, app, desempenho) |
 | Páginas curvas | **ONNX Runtime** com o mesmo `uvdoc.onnx` do Windows | Mesmo modelo, mesmo resultado |
 | Assinatura digital | BouncyCastle (CMS/PAdES) + Android Keystore | A chave do A1 fica no Keystore, sem poder ser exportada, com digital ou PIN a cada uso |
@@ -43,7 +43,8 @@ testes rodando no GitHub e o APK publicado em Releases ("ultima-versao").
    cartões com miniatura, estrela e menu ⋮ (renomear, mover, duplicar, favoritar, compartilhar, excluir com
    desfazer); importar pelo seletor do Android, "Abrir com" e "Compartilhar com o Prumo"; "Adicionar PDFs"
    nas pastas; leitor simples; Ajustes (idioma, versão, Color Software); 12 idiomas; tema claro e escuro.
-2. **Motores e páginas (0.2.0)**: PDFium e qpdf compilados no CI; leitor próprio com PDFium (zoom, miniaturas,
+2. **Motores e páginas (0.2.0)**: PDFium no app (organizar, remover, extrair, dividir, combinar e incluir
+   também pelo PDFium, que já grava o PDF; o qpdf entra nas etapas 6 e 7, para criptografia e compressão); leitor próprio com PDFium (zoom, miniaturas,
    busca no PDF, PDF com senha); organizar páginas (arrastar com rolagem automática, girar, excluir,
    desfazer, ver página grande); remover, extrair, dividir, combinar, incluir páginas de outro PDF;
    seleção de vários deslizando o dedo; busca por texto na biblioteca.
@@ -64,7 +65,8 @@ testes rodando no GitHub e o APK publicado em Releases ("ultima-versao").
    remover senha do PDF (AES-256), aviso das cópias sem senha, assinatura PAdES com A1 no Keystore, níveis
    P1/P2/P3, conferência das assinaturas com o pyHanko no CI.
 8. **Publicação (1.0.0)**: chave de envio guardada nos segredos do GitHub, pacote AAB, ficha do Google Play
-   (seção "Segurança dos dados": nenhuma coleta), teste interno e checklist de telas grandes do Google.
+   (seção "Segurança dos dados": nenhuma coleta), avisos de licença das bibliotecas (PDFium e as
+   outras) dentro do app, teste interno e checklist de telas grandes do Google.
 
 ## Pontos em aberto (não confirmados)
 

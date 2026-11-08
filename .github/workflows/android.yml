@@ -26,17 +26,18 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v5
 
-      - name: Preparar o Android SDK (API 37 para compilar)
+      - name: Preparar o Android SDK (API 37, NDK e CMake para a parte em C++)
         run: |
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
-          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-37.0" "build-tools;36.0.0" > /dev/null
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-37.0" "build-tools;36.0.0" \
+            "ndk;28.2.13676358" "cmake;3.22.1" > /dev/null
           mkdir -p out/logs
           echo "commit=${GITHUB_SHA}" > out/STATUS.txt
 
       - name: Conferir as traduções (todo texto da interface traduzido nos 11 idiomas)
         run: python3 tools/i18n_check.py 2>&1 | tee out/logs/i18n.txt
 
-      - name: Testes de unidade (biblioteca, library.json compartilhado, idiomas)
+      - name: Testes de unidade (biblioteca, library.json compartilhado, idiomas, seleção de páginas)
         run: ./gradlew --no-daemon :app:testDebugUnitTest 2>&1 | tee out/logs/unit-tests.txt
 
       - name: Compilar (teste, emulador e versão de publicação)

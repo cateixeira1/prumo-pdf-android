@@ -52,6 +52,7 @@ import androidx.compose.ui.unit.dp
 import br.com.prumopdf.AppViewModel
 import br.com.prumopdf.Route
 import br.com.prumopdf.Tool
+import br.com.prumopdf.PageMode
 import br.com.prumopdf.core.FolderItem
 import br.com.prumopdf.core.PdfItem
 import br.com.prumopdf.i18n.L
@@ -71,6 +72,10 @@ sealed interface DialogState {
     data class AddPdfs(val folder: String, val justCreated: Boolean = false) : DialogState
     data class MoveOrCopy(val items: List<PdfItem>, val folder: String) : DialogState
     data class NotReady(val title: String) : DialogState
+    data class Split(val item: PdfItem) : DialogState
+    data class Insert(val target: PdfItem, val source: PdfItem) : DialogState
+    data class Merge(val items: List<PdfItem>) : DialogState
+    data class RemovePassword(val item: PdfItem) : DialogState
 }
 
 /** Pedido de escolher PDFs da biblioteca (ferramentas da tela inicial, "Adicionar PDFs"). */
@@ -100,12 +105,44 @@ class UiActions(val vm: AppViewModel) {
             dialog = DialogState.NotReady(toolTitle(tool))
             return
         }
+        if (tool == Tool.MERGE) {
+            chooser = ChooserRequest(L("Combinar PDFs"), multiple = true) { picked -> merge(picked) }
+            return
+        }
         chooser = ChooserRequest(L(tool.question), multiple = false) { picked ->
-            val item = picked.firstOrNull() ?: return@ChooserRequest
-            when (tool) {
-                Tool.READ -> open(Route.Reader(item.id))
-                else -> open(Route.Document(item.id))
+            picked.firstOrNull()?.let { toolOn(tool, it) }
+        }
+    }
+
+    fun merge(items: List<PdfItem>) {
+        if (items.size < 2) vm.say(L("Escolha pelo menos 2 PDFs.")) else dialog = DialogState.Merge(items)
+    }
+
+    /** Uma ferramenta aplicada a um PDF já escolhido (tela inicial ou tela do documento). */
+    fun toolOn(tool: Tool, item: PdfItem) {
+        if (!tool.ready) {
+            dialog = DialogState.NotReady(toolTitle(tool))
+            return
+        }
+        if (item.isLocked && tool != Tool.READ) {
+            dialog = DialogState.RemovePassword(item)
+            return
+        }
+        when (tool) {
+            Tool.READ -> open(Route.Reader(item.id))
+            Tool.ORGANIZE -> open(Route.Organize(item.id))
+            Tool.REMOVE -> open(Route.PickPages(item.id, PageMode.REMOVE))
+            Tool.EXTRACT -> open(Route.PickPages(item.id, PageMode.EXTRACT))
+            Tool.SPLIT -> dialog = DialogState.Split(item)
+            Tool.INSERT -> chooser = ChooserRequest(L("De qual PDF vêm as páginas?"), multiple = false) { picked ->
+                val source = picked.firstOrNull() ?: return@ChooserRequest
+                if (source.isLocked) dialog = DialogState.RemovePassword(source)
+                else dialog = DialogState.Insert(item, source)
             }
+            Tool.MERGE -> chooser = ChooserRequest(L("Combinar PDFs"), multiple = true) { picked ->
+                merge(listOf(item) + picked.filter { it.id != item.id })
+            }
+            else -> open(Route.Document(item.id))
         }
     }
 
@@ -173,10 +210,10 @@ fun PrumoAppUI(vm: AppViewModel, hinge: Hinge?) {
     LaunchedEffect(notice) {
         if (notice != null) {
             val r = snackbar.showSnackbar(
-                notice.text, actionLabel = if (notice.undo != null) L("Desfazer") else null,
-                duration = if (notice.undo != null) SnackbarDuration.Long else SnackbarDuration.Short,
+                notice.text, actionLabel = notice.actionLabel,
+                duration = if (notice.action != null) SnackbarDuration.Long else SnackbarDuration.Short,
             )
-            if (r == SnackbarResult.ActionPerformed) notice.undo?.invoke()
+            if (r == SnackbarResult.ActionPerformed) notice.action?.invoke()
             vm.clearNotice(notice)
         }
     }
@@ -199,6 +236,7 @@ fun PrumoAppUI(vm: AppViewModel, hinge: Hinge?) {
                     }
                 }
                 actions.wide = split != null
+                vm.wide = split != null
                 if (split == null) {
                     SinglePane(vm)
                 } else {
@@ -260,6 +298,8 @@ fun RouteScreen(vm: AppViewModel, route: Route, showBack: Boolean, pane: Pane = 
         Route.Settings -> SettingsScreen(vm, showBack)
         is Route.Document -> DocumentScreen(vm, snapshot, route.id, showBack)
         is Route.Reader -> ReaderScreen(vm, snapshot, route.id, showBack)
+        is Route.Organize -> OrganizeScreen(vm, snapshot, route.id, showBack)
+        is Route.PickPages -> PickPagesScreen(vm, snapshot, route.id, route.mode, showBack)
     }
 }
 
@@ -333,6 +373,22 @@ private fun Dialogs(actions: UiActions) {
             ),
             onDismiss = close,
         )
+        is DialogState.Split -> SplitDialog(d.item, close) { parts ->
+            close()
+            vm.split(d.item, parts)
+        }
+        is DialogState.Insert -> InsertDialog(d.target, d.source, close) { pages, position ->
+            close()
+            vm.insertPages(d.target, d.source, pages, position)
+        }
+        is DialogState.Merge -> MergeDialog(d.items, close) { items, name ->
+            close()
+            vm.merge(items, name)
+        }
+        is DialogState.RemovePassword -> RemovePasswordDialog(d.item, close) { pw ->
+            close()
+            vm.removePassword(d.item, pw)
+        }
         is DialogState.NotReady -> InfoDialog(
             d.title, L("Esta função ainda não chegou ao Prumo para Android. Ela vem nas próximas versões."), close,
         )

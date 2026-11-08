@@ -6,3 +6,4 @@ Prumo PDF
 tela
 # Nome e versão do app
 Prumo PDF ${BuildConfig.VERSION_NAME}
+giro

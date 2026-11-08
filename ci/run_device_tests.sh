@@ -16,7 +16,7 @@ adb install -r -g apks/app-debug.apk > "$OUT/logs/install-$NAME.txt" 2>&1
 adb install -r -g apks/app-debug-androidTest.apk >> "$OUT/logs/install-$NAME.txt" 2>&1
 
 # Testes de interface e da biblioteca no aparelho
-adb shell am instrument -w -r -e class br.com.prumopdf.AppTest "$RUNNER" > "$OUT/logs/tests-$NAME.txt" 2>&1
+adb shell am instrument -w -r -e class br.com.prumopdf.AppTest,br.com.prumopdf.PdfOpsTest,br.com.prumopdf.PagesUiTest "$RUNNER" > "$OUT/logs/tests-$NAME.txt" 2>&1
 if grep -q "^OK (" "$OUT/logs/tests-$NAME.txt"; then
   RESULT="ok: $(grep '^OK (' "$OUT/logs/tests-$NAME.txt")"
 else
