@@ -49,14 +49,28 @@ object Pdfium {
 
     init {
         System.loadLibrary("prumo")
-        call { PdfiumNative.init() }
+        // O PDFium é iniciado na primeira chamada, já na linha de execução dele (ver [ready]). Iniciar aqui,
+        // esperando a outra linha de execução enquanto esta classe ainda está sendo carregada, travava o app:
+        // o código da outra linha precisa da classe pronta (a JVM faz ela esperar) e as duas ficavam paradas.
+    }
+
+    private var initialized = false   // só lido e mudado na linha de execução do PDFium
+
+    private fun ready() {
+        if (!initialized) {
+            PdfiumNative.init()
+            initialized = true
+        }
     }
 
     /** Roda [block] na linha de execução do PDFium e espera o resultado. */
     fun <T> call(block: () -> T): T {
-        if (Thread.currentThread().name == THREAD) return block()
+        if (Thread.currentThread().name == THREAD) {
+            ready()
+            return block()
+        }
         try {
-            return executor.submit(Callable(block)).get()
+            return executor.submit(Callable { ready(); block() }).get()
         } catch (e: ExecutionException) {
             throw e.cause ?: e
         }
