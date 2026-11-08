@@ -70,6 +70,10 @@ class ScreenshotTest {
                     compose.onNodeWithTag("docgrid").performScrollToNode(hasText("Contrato de locação"))
                     compose.onNodeWithText("Contrato de locação").performClick()
                     compose.waitUntilAtLeastOneExists(hasTestTag("read"), 5000)
+                    // a miniatura grande da tela do documento demora mais no emulador na primeira vez
+                    val id = lib.itemAt("Contrato de locação.pdf")!!.id
+                    val thumbs = File(app.cacheDir, "thumbs")
+                    compose.waitUntil(8000) { (thumbs.listFiles { f -> f.name.startsWith("${id}_") }?.size ?: 0) >= 2 }
                     shot(lang, 4, "documento")
                     compose.onNodeWithTag("read").performScrollTo().performClick()
                     compose.waitUntilAtLeastOneExists(hasTestTag("pageIndicator"), 5000)
