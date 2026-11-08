@@ -29,6 +29,8 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.Timeout
+import java.util.concurrent.TimeUnit
 import org.junit.runner.RunWith
 import java.io.File
 
@@ -36,7 +38,11 @@ import java.io.File
 @OptIn(ExperimentalTestApi::class)
 @RunWith(AndroidJUnit4::class)
 class PagesUiTest {
-    @get:Rule
+    /** Um teste preso falha em 3 minutos, com a pilha de chamadas no relatório (em vez de travar tudo). */
+    @get:Rule(order = 0)
+    val timeout: Timeout = Timeout.builder().withTimeout(180, TimeUnit.SECONDS).withLookingForStuckThread(true).build()
+
+    @get:Rule(order = 1)
     val compose = createEmptyComposeRule()
 
     private val app get() = ApplicationProvider.getApplicationContext<PrumoApplication>()

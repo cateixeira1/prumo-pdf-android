@@ -13,13 +13,20 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.Timeout
+import java.util.concurrent.TimeUnit
 import org.junit.runner.RunWith
 import java.io.File
 
 /** Operações com páginas no PDFium (o mesmo motor do Windows), conferidas pelo texto de cada página. */
 @RunWith(AndroidJUnit4::class)
 class PdfOpsTest {
+    /** Um teste preso falha em 3 minutos, com a pilha de chamadas no relatório (em vez de travar tudo). */
+    @get:Rule(order = 0)
+    val timeout: Timeout = Timeout.builder().withTimeout(180, TimeUnit.SECONDS).withLookingForStuckThread(true).build()
+
     private val app get() = ApplicationProvider.getApplicationContext<PrumoApplication>()
     private lateinit var dir: File
 
