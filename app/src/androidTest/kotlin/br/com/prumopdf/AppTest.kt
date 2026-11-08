@@ -126,6 +126,20 @@ class AppTest {
     }
 
     @Test
+    fun thumbnailsLoadAtTwoSizesAtOnce() {
+        // em tablet e dobrável, a lista e a tela do documento pedem a miniatura do mesmo PDF juntas
+        val item = library.itemAt("Contrato de locação.pdf")!!
+        val thumbs = app.thumbnails
+        val results = arrayOfNulls<android.graphics.Bitmap>(4)
+        val threads = (0 until 4).map { i ->
+            Thread { results[i] = thumbs.load(item.id, item.version, item.file, if (i % 2 == 0) 136 + i else 512 + i) }
+        }
+        threads.forEach { it.start() }
+        threads.forEach { it.join() }
+        assertTrue(results.all { it != null && it.width > 100 })
+    }
+
+    @Test
     fun sharedLibraryFileIsWritten() {
         val shared = File(library.root, ".prumo/library.json")
         assertTrue(shared.exists())

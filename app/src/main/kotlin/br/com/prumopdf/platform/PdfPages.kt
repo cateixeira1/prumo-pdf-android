@@ -43,7 +43,8 @@ object PdfPages {
         ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY).use { fd ->
             PdfRenderer(fd).use { r -> renderPage(r, page, widthPx) }
         }
-    } catch (_: Throwable) {
+    } catch (e: Throwable) {
+        android.util.Log.w("Prumo", "página ${page + 1} de ${file.name} não foi desenhada", e)
         null
     }
 
@@ -66,6 +67,7 @@ object PdfPages {
  * quando ele sai da biblioteca.
  */
 class Thumbnails(private val dir: File) {
+    private val renderLock = Any()
     private val memory = object : LruCache<String, Bitmap>((Runtime.getRuntime().maxMemory() / 16).toInt()) {
         override fun sizeOf(key: String, value: Bitmap) = value.byteCount
     }
@@ -88,12 +90,18 @@ class Thumbnails(private val dir: File) {
                 return it
             }
         }
-        val bmp = PdfPages.render(file, 0, width) ?: return null
+        // Um desenho por vez: a lista e a tela do documento podem pedir o mesmo PDF ao mesmo tempo
+        // (duas colunas em tablet e dobrável), e o PdfRenderer não é feito para isso.
+        val bmp = synchronized(renderLock) {
+            memory.get(k) ?: (PdfPages.render(file, 0, width) ?: PdfPages.render(file, 0, width))
+        } ?: return null
         memory.put(k, bmp)
         runCatching {
-            // versões antigas desta miniatura
-            dir.listFiles { f -> f.name.startsWith("${id}_") && f.name != disk.name }?.forEach { it.delete() }
-            FileOutputStream(disk).use { bmp.compress(Bitmap.CompressFormat.PNG, 100, it) }
+            // versões antigas deste PDF (o arquivo mudou); outros tamanhos da mesma versão ficam
+            dir.listFiles { f -> f.name.startsWith("${id}_") && !f.name.startsWith("${id}_${version}_") }?.forEach { it.delete() }
+            val tmp = File(dir, ".${disk.name}.tmp")
+            FileOutputStream(tmp).use { bmp.compress(Bitmap.CompressFormat.PNG, 100, it) }
+            tmp.renameTo(disk)
         }
         return bmp
     }
