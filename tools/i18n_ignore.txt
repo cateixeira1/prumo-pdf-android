@@ -1,0 +1,8 @@
+# Textos que aparecem iguais em todos os idiomas (nomes próprios, siglas).
+Color Software
+OCR
+Prumo PDF
+# Rótulos internos (não aparecem na tela)
+tela
+# Nome e versão do app
+Prumo PDF ${BuildConfig.VERSION_NAME}
