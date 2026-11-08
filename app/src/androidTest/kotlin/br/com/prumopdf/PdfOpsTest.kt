@@ -150,7 +150,7 @@ class PdfOpsTest {
     @Test
     fun searchFindsTheWordWithRectangles() {
         val f = File(dir, "contrato.pdf")
-        DemoData.write(f, "Contrato", 4)
+        DemoData.asset("contrato.pdf", f)
         Pdfium.openOrNull(f)!!.use { doc ->
             val text = doc.text(2)
             val hits = br.com.prumopdf.core.TextFold.find(text, "clausula decima")

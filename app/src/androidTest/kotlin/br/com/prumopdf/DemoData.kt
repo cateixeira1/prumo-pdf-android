@@ -39,10 +39,22 @@ object DemoData {
         library.root.listFiles()?.forEach { it.deleteRecursively() }
         File(library.supportDir, "library.json").delete()
         library.reload()
-        for (d in docs) write(File(library.root, d.path), d.title, d.pages, d.scan)
+        for (d in docs) {
+            val f = File(library.root, d.path)
+            // O contrato vem pronto (texto em Helvetica, que o PDFium extrai), para a busca no documento.
+            if (d.path == "Contrato de locação.pdf") asset("contrato.pdf", f) else write(f, d.title, d.pages, d.scan)
+        }
         library.reload()
         val ids = docs.filter { it.favorite }.mapNotNull { library.itemAt(it.path)?.id }
         library.setFavorite(ids, true)
+    }
+
+    /** Copia um PDF de teste (app/src/androidTest/assets, gerados por tools/make_test_pdfs.py). */
+    fun asset(name: String, dest: File) {
+        dest.parentFile?.mkdirs()
+        androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().context.assets.open(name).use { i ->
+            dest.outputStream().use { i.copyTo(it) }
+        }
     }
 
     fun write(file: File, title: String, pages: Int, scan: Boolean = false) {

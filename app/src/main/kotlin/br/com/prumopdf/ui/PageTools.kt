@@ -7,8 +7,8 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -232,16 +232,6 @@ private fun OrganizeContent(vm: AppViewModel, item: PdfItem, doc: ReaderDoc, sho
                 modifier = Modifier.fillMaxSize().testTag("organizeGrid")
                     .pointerInput(doc) { gridHeight = size.height }
                     .pointerInput(doc) {
-                        detectTapGestures(
-                            onTap = { pos ->
-                                val i = grid.indexAt(pos) ?: return@detectTapGestures
-                                val k = entries.getOrNull(i)?.key ?: return@detectTapGestures
-                                if (k in selected) selected.remove(k) else selected.add(k)
-                            },
-                            onDoubleTap = { pos -> grid.indexAt(pos)?.let { viewing = it } },
-                        )
-                    }
-                    .pointerInput(doc) {
                         gridHeight = size.height
                         detectDragGesturesAfterLongPress(
                             onDragStart = { pos ->
@@ -274,6 +264,10 @@ private fun OrganizeContent(vm: AppViewModel, item: PdfItem, doc: ReaderDoc, sho
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier.animateItem().testTag("cell-$index")
+                            .combinedClickable(
+                                onClick = { if (e.key in selected) selected.remove(e.key) else selected.add(e.key) },
+                                onDoubleClick = { viewing = index },
+                            )
                             .graphicsLayer {
                                 scaleX = if (isDrag) 1.08f else 1f
                                 scaleY = if (isDrag) 1.08f else 1f

@@ -85,10 +85,10 @@ class PagesUiTest {
     @Test
     fun organizeDragToReorderAndSave() {
         val item = library.itemAt("Recibo de aluguel.pdf")!!
-        // 3 páginas com títulos diferentes para conferir a ordem
-        DemoData.write(item.file, "Recibo", 3)
-        library.reload()
-        compose.waitUntil(10_000) { library.itemAt("Recibo de aluguel.pdf")!!.pageCount == 3 }
+        // 3 páginas com "1 / 3", "2 / 3", "3 / 3" no rodapé, para conferir a ordem
+        DemoData.asset("numerado.pdf", item.file)
+        InstrumentationRegistry.getInstrumentation().runOnMainSync { vm().refresh() }
+        compose.waitUntil(30_000) { library.itemAt("Recibo de aluguel.pdf")?.pageCount == 3 }
         val id = item.id
         openRoute(Route.Organize(id))
         compose.waitUntilAtLeastOneExists(hasTestTag("cell-2"), 10_000)
