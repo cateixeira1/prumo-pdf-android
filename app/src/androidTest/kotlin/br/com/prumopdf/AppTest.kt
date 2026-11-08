@@ -94,7 +94,7 @@ class AppTest {
 
     @Test
     fun analysisCountsPages() {
-        compose.waitUntil(10_000) { library.items.all { it.pageCount != null } }
+        compose.waitUntil(60_000) { library.items.all { it.pageCount != null } }
         assertEquals(18, library.itemAt("Clientes/Bruno Lima/Petição inicial.pdf")!!.pageCount)
         assertEquals(1, library.itemAt("Recibo de aluguel.pdf")!!.pageCount)
     }

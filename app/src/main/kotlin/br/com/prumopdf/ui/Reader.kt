@@ -422,8 +422,11 @@ private fun PagesView(doc: ReaderDoc, list: LazyListState, hits: List<SearchHit>
                             .shadow(2.dp, RoundedCornerShape(2.dp)).clip(RoundedCornerShape(2.dp)).background(Color.White),
                         contentAlignment = Alignment.Center,
                     ) {
-                        bmp?.let {
-                            Image(it.asImageBitmap(), LF("Página {} de {}", i + 1, doc.sizes.size), Modifier.fillMaxSize(), contentScale = ContentScale.FillBounds)
+                        val b = bmp
+                        if (b != null) {
+                            Image(b.asImageBitmap(), LF("Página {} de {}", i + 1, doc.sizes.size), Modifier.fillMaxSize(), contentScale = ContentScale.FillBounds)
+                        } else {
+                            CircularProgressIndicator(Modifier.size(28.dp), strokeWidth = 2.5.dp)
                         }
                         if (pageHits.isNotEmpty()) {
                             Canvas(Modifier.fillMaxSize()) {

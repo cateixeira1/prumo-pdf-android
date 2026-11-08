@@ -11,7 +11,11 @@ import java.io.FileOutputStream
 object PdfPages {
     /** Desenha a página com a largura pedida (em pixels), em fundo branco. */
     fun render(file: File, page: Int, widthPx: Int, password: String? = null): Bitmap? = try {
-        Pdfium.openOrNull(file, password)?.use { it.renderPage(page, widthPx) }
+        val t0 = System.nanoTime()
+        Pdfium.openOrNull(file, password)?.use { it.renderPage(page, widthPx) }.also {
+            val ms = (System.nanoTime() - t0) / 1_000_000
+            if (ms > 300 || it == null) Log.i("Prumo", "miniatura de ${file.name} ($widthPx px): $ms ms, ${if (it == null) "falhou" else "ok"}")
+        }
     } catch (e: Throwable) {
         Log.w("Prumo", "página ${page + 1} de ${file.name} não foi desenhada", e)
         null

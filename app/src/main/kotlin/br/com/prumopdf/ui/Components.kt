@@ -235,6 +235,8 @@ fun PageThumbnail(item: PdfItem, thumbnails: Thumbnails, width: Dp, height: Dp) 
             Image(b.asImageBitmap(), null, contentScale = ContentScale.Crop, alignment = Alignment.TopCenter)
         } else if (item.isLocked) {
             Icon(Icons.Filled.Lock, null, tint = Palette.purple, modifier = Modifier.size(16.dp))
+        } else {
+            CircularProgressIndicator(Modifier.size(12.dp), strokeWidth = 1.5.dp, color = Prumo.colors.placeholder)
         }
     }
 }

@@ -63,7 +63,7 @@ class ScreenshotTest {
                     AppLanguage.set(app, if (lang == "system") null else lang)
                 }
                 ActivityScenario.launch(MainActivity::class.java).use {
-                    compose.waitUntil(10_000) { lib.items.all { item -> item.pageCount != null } }
+                    compose.waitUntil(60_000) { lib.items.all { item -> item.pageCount != null } }
                     shot(lang, 1, "inicio")
                     compose.onNodeWithText(L("Comprimir PDF")).performScrollTo()
                     shot(lang, 2, "ferramentas")

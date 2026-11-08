@@ -150,10 +150,12 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     // region Mensagens
 
     fun say(text: String, undo: (() -> Unit)? = null) {
+        android.util.Log.i("Prumo", "mensagem: $text")
         notice = Notice(text, undo, if (undo != null) L("Desfazer") else null)
     }
 
     fun sayWithAction(text: String, label: String, action: () -> Unit) {
+        android.util.Log.i("Prumo", "mensagem: $text")
         notice = Notice(text, action, label)
     }
 
@@ -166,8 +168,10 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             try {
                 block()
             } catch (e: UserError) {
+                android.util.Log.i("Prumo", "aviso: ${e.message}")
                 say(e.message ?: "")
             } catch (e: Exception) {
+                android.util.Log.w("Prumo", "não foi possível concluir", e)
                 say(sentences(L("Não foi possível concluir."), e.localizedMessage ?: ""))
             }
         }

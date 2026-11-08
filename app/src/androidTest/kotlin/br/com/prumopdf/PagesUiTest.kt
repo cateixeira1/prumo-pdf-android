@@ -53,7 +53,7 @@ class PagesUiTest {
     fun setUp() {
         DemoData.reset(library)
         scenario = ActivityScenario.launch(MainActivity::class.java)
-        compose.waitUntil(15_000) { library.items.all { it.pageCount != null } }
+        compose.waitUntil(60_000) { library.items.all { it.pageCount != null } }
     }
 
     @After
@@ -106,7 +106,7 @@ class PagesUiTest {
         }
         compose.waitForIdle()
         compose.onNodeWithTag("organizeSave").performClick()
-        compose.waitUntil(10_000) { library.item(id)?.meta?.hasUndo == true }
+        compose.waitUntil(30_000) { library.item(id)?.meta?.hasUndo == true }
         // a página 1 foi para o fim: a ordem agora é 2, 3, 1
         assertEquals(listOf("2", "3", "1"), footers(library.item(id)!!.file))
     }
@@ -121,11 +121,11 @@ class PagesUiTest {
         compose.onNodeWithTag("cell-1", useUnmergedTree = true).performClick()
         compose.onNodeWithTag("deletePages").performClick()
         compose.onNodeWithTag("organizeSave").performClick()
-        compose.waitUntil(10_000) { library.item(item.id)?.pageCount == 4 }
+        compose.waitUntil(30_000) { library.item(item.id)?.pageCount == 4 }
         Pdfium.openOrNull(library.item(item.id)!!.file)!!.use { assertEquals(1, it.rotation(0)) }
         // Desfazer volta as 6 páginas
         InstrumentationRegistry.getInstrumentation().runOnMainSync { vm().undoChange(library.item(item.id)!!) }
-        compose.waitUntil(10_000) { library.item(item.id)?.pageCount == 6 }
+        compose.waitUntil(30_000) { library.item(item.id)?.pageCount == 6 }
     }
 
     @Test

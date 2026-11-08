@@ -154,7 +154,7 @@ class PdfOpsTest {
         Pdfium.openOrNull(f)!!.use { doc ->
             val text = doc.text(2)
             val hits = br.com.prumopdf.core.TextFold.find(text, "clausula decima")
-            assertEquals(1, hits.size)
+            assertEquals("texto da página 3: " + text.take(600), 1, hits.size)
             val rects = doc.textRects(2, hits[0].first, hits[0].last - hits[0].first + 1)
             assertTrue(rects.isNotEmpty())
             val r = rects[0]

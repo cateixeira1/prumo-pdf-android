@@ -9,6 +9,7 @@ RUNNER="br.com.prumopdf.app.test/androidx.test.runner.AndroidJUnitRunner"
 LANGS="pt,en,de,ja"
 
 adb wait-for-device
+adb logcat -G 16M > /dev/null 2>&1
 adb shell getprop ro.build.version.release > "$OUT/logs/android-$NAME.txt"
 adb shell wm size >> "$OUT/logs/android-$NAME.txt"
 adb shell wm density >> "$OUT/logs/android-$NAME.txt"
@@ -51,6 +52,6 @@ else
 fi
 
 adb pull /sdcard/Android/data/br.com.prumopdf.app/files/screenshots/. "$OUT/screenshots/" > /dev/null 2>&1
-adb logcat -d -t 4000 > "$OUT/logs/logcat-$NAME.txt" 2>&1
+adb logcat -d -s Prumo:V AndroidRuntime:E TestRunner:V > "$OUT/logs/logcat-$NAME.txt" 2>&1
 echo "$NAME: $RESULT" | tee "$OUT/result-$NAME.txt"
 case "$RESULT" in ok:*) [[ "$RESULT" == *"com erro"* ]] && exit 1 || exit 0 ;; *) exit 1 ;; esac

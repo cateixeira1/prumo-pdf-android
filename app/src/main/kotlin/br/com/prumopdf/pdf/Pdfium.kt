@@ -69,10 +69,21 @@ object Pdfium {
             ready()
             return block()
         }
+        val asked = System.nanoTime()
+        var started = 0L
         try {
-            return executor.submit(Callable { ready(); block() }).get()
+            return executor.submit(Callable {
+                started = System.nanoTime()
+                ready()
+                block()
+            }).get()
         } catch (e: ExecutionException) {
             throw e.cause ?: e
+        } finally {
+            val now = System.nanoTime()
+            val waited = (started - asked) / 1_000_000
+            val ran = (now - started) / 1_000_000
+            if (waited > 300 || ran > 300) android.util.Log.i("Prumo", "PDFium: esperou $waited ms, levou $ran ms")
         }
     }
 
