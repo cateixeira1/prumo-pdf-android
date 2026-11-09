@@ -116,12 +116,20 @@ class PagesUiTest {
         val item = library.itemAt("Contrato de locação.pdf")!!
         openRoute(Route.Organize(item.id))
         compose.waitUntilAtLeastOneExists(hasTestTag("cell-1"), 10_000)
-        compose.onNodeWithTag("cell-0", useUnmergedTree = true).performClick()
+        // O toque espera um instante para ver se é toque duplo (que abre a página grande).
+        fun tap(tag: String) {
+            compose.onNodeWithTag(tag, useUnmergedTree = true).performClick()
+            compose.mainClock.advanceTimeBy(600)
+            compose.waitForIdle()
+        }
+        tap("cell-1")
         compose.onNodeWithTag("rotateRight").performClick()
-        compose.onNodeWithTag("cell-1", useUnmergedTree = true).performClick()
+        tap("cell-1")          // desmarca
+        tap("cell-0")
         compose.onNodeWithTag("deletePages").performClick()
         compose.onNodeWithTag("organizeSave").performClick()
-        compose.waitUntil(30_000) { library.item(item.id)?.pageCount == 4 }
+        // a página 1 saiu; a antiga página 2, girada, é a primeira agora
+        compose.waitUntil(30_000) { library.item(item.id)?.pageCount == 5 }
         Pdfium.openOrNull(library.item(item.id)!!.file)!!.use { assertEquals(1, it.rotation(0)) }
         // Desfazer volta as 6 páginas
         InstrumentationRegistry.getInstrumentation().runOnMainSync { vm().undoChange(library.item(item.id)!!) }

@@ -412,7 +412,10 @@ private fun PagesView(doc: ReaderDoc, list: LazyListState, hits: List<SearchHit>
                     val base = (widthPx - 24 * dens).roundToInt().coerceAtLeast(1)
                     val px = (base * quality).roundToInt().coerceAtMost(4096)
                     // Mostra logo a versão já desenhada (menor) enquanto a mais nítida fica pronta.
-                    val bmp by produceState(doc.cached(i, px) ?: doc.cached(i, base), i, px) {
+                    val preview = (base / 4).coerceAtLeast(64)
+                    val bmp by produceState(doc.cached(i, px) ?: doc.cached(i, base) ?: doc.cached(i, preview), i, px) {
+                        // Primeiro uma versão pequena (rápida), depois a nítida.
+                        if (value == null) doc.page(i, preview)?.let { value = it }
                         val sharp = doc.page(i, px)
                         if (sharp != null) value = sharp
                     }
