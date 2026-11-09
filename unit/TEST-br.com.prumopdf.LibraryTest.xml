@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="br.com.prumopdf.LibraryTest" tests="17" skipped="0" failures="0" errors="0" timestamp="2026-11-09T00:39:50.526Z" hostname="runnervmwuk1x" time="0.175">
+  <properties/>
+  <testcase name="namesAndOrder" classname="br.com.prumopdf.LibraryTest" time="0.016"/>
+  <testcase name="metadataSurvivesRestart" classname="br.com.prumopdf.LibraryTest" time="0.066"/>
+  <testcase name="sharedFileUsesTheSameFieldsAsIphoneAndWindows" classname="br.com.prumopdf.LibraryTest" time="0.005"/>
+  <testcase name="renameMoveAndDuplicateKeepTheRightIds" classname="br.com.prumopdf.LibraryTest" time="0.017"/>
+  <testcase name="deleteAndUndoRestoreTheSameDocument" classname="br.com.prumopdf.LibraryTest" time="0.009"/>
+  <testcase name="findsPdfsAndFoldersAndSkipsHiddenOnes" classname="br.com.prumopdf.LibraryTest" time="0.004"/>
+  <testcase name="modifyKeepsThePreviousVersionForUndo" classname="br.com.prumopdf.LibraryTest" time="0.007"/>
+  <testcase name="listsFavoritesRecentAndSearch" classname="br.com.prumopdf.LibraryTest" time="0.006"/>
+  <testcase name="saveNewUsesAFreeName" classname="br.com.prumopdf.LibraryTest" time="0.008"/>
+  <testcase name="importRefusesNonPdfAndNumbersRepeatedNames" classname="br.com.prumopdf.LibraryTest" time="0.004"/>
+  <testcase name="renameRefusesAnExistingName" classname="br.com.prumopdf.LibraryTest" time="0.002"/>
+  <testcase name="renameFolderMovesTheMetadata" classname="br.com.prumopdf.LibraryTest" time="0.004"/>
+  <testcase name="pdfFromAnotherDeviceKeepsItsIdAndFavorite" classname="br.com.prumopdf.LibraryTest" time="0.004"/>
+  <testcase name="modifyKeepsTheOriginalWhenTheResultCannotBeChecked" classname="br.com.prumopdf.LibraryTest" time="0.003"/>
+  <testcase name="changesFromAnotherDeviceArriveAndLocalChangesWin" classname="br.com.prumopdf.LibraryTest" time="0.008"/>
+  <testcase name="analysisFeedsSearchAndTheOcrList" classname="br.com.prumopdf.LibraryTest" time="0.003"/>
+  <testcase name="deleteFolderAndUndo" classname="br.com.prumopdf.LibraryTest" time="0.006"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

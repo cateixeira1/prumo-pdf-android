@@ -1,0 +1,12 @@
+commit=aac8d273e531f39abc8a3d946470d16f1069e937
+testes de unidade: 27, falhas: 0
+total 59192
+drwxr-xr-x  2 runner runner     4096 Nov  9 00:42 .
+drwxr-xr-x 13 runner runner     4096 Nov  9 00:42 ..
+-rw-r--r--  1 runner runner  1350338 Nov  9 00:42 app-debug-androidTest.apk
+-rw-r--r--  1 runner runner 38361988 Nov  9 00:42 app-debug.apk
+-rw-r--r--  1 runner runner 20888226 Nov  9 00:42 app-release.apk
+fold: ok: OK (21 tests)
+phone: ok: OK (21 tests)
+tablet: ok: OK (21 tests)
+emulador: success

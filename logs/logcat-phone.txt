@@ -1,0 +1,158 @@
+--------- beginning of main
+11-09 00:44:40.663  2682  2910 I TestRunner: run started: 21 tests
+11-09 00:44:40.666  2682  2910 I TestRunner: started: homeShowsListsAndAllTools(br.com.prumopdf.AppTest)
+11-09 00:44:46.527  2682  3256 I Prumo   : PDFium: esperou 345 ms, levou 25 ms
+11-09 00:44:48.031  2682  3256 I Prumo   : PDFium: esperou 193 ms, levou 306 ms
+11-09 00:44:48.190  2682  3258 I Prumo   : PDFium: esperou 414 ms, levou 69 ms
+11-09 00:44:50.892  2682  3258 I Prumo   : PDFium: esperou 0 ms, levou 369 ms
+11-09 00:44:50.919  2682  3256 I Prumo   : PDFium: esperou 367 ms, levou 26 ms
+11-09 00:44:52.759  2682  3256 I Prumo   : PDFium: esperou 184 ms, levou 403 ms
+11-09 00:44:52.870  2682  3258 I Prumo   : PDFium: esperou 403 ms, levou 110 ms
+11-09 00:44:53.459  2682  3256 I Prumo   : PDFium: esperou 5 ms, levou 507 ms
+11-09 00:44:53.782  2682  3258 I Prumo   : PDFium: esperou 507 ms, levou 249 ms
+11-09 00:44:54.048  2682  2910 I TestRunner: finished: homeShowsListsAndAllTools(br.com.prumopdf.AppTest)
+11-09 00:44:54.055  2682  2910 I TestRunner: started: countsMatchTheLibrary(br.com.prumopdf.AppTest)
+11-09 00:44:55.818  2682  3256 I Prumo   : PDFium: esperou 100 ms, levou 333 ms
+11-09 00:44:56.242  2682  3257 I Prumo   : PDFium: esperou 318 ms, levou 0 ms
+11-09 00:44:57.438  2682  3256 I Prumo   : PDFium: esperou 11 ms, levou 902 ms
+11-09 00:44:57.756  2682  3257 I Prumo   : PDFium: esperou 901 ms, levou 329 ms
+11-09 00:44:58.102  2682  3258 I Prumo   : PDFium: esperou 1221 ms, levou 345 ms
+11-09 00:44:58.103  2682  3607 I Prumo   : PDFium: esperou 1457 ms, levou 0 ms
+11-09 00:44:58.124  2682  3256 I Prumo   : PDFium: esperou 662 ms, levou 21 ms
+11-09 00:44:58.159  2682  3257 I Prumo   : PDFium: esperou 366 ms, levou 36 ms
+11-09 00:44:58.340  2682  2910 I TestRunner: finished: countsMatchTheLibrary(br.com.prumopdf.AppTest)
+11-09 00:44:58.408  2682  2910 I TestRunner: started: importFileAndDeleteWithUndo(br.com.prumopdf.AppTest)
+11-09 00:44:58.869  2682  3258 I Prumo   : PDFium: esperou 122 ms, levou 465 ms
+11-09 00:44:58.991  2682  3256 I Prumo   : PDFium: esperou 576 ms, levou 125 ms
+11-09 00:44:59.782  2682  3607 I Prumo   : PDFium: esperou 692 ms, levou 791 ms
+11-09 00:44:59.790  2682  3257 I Prumo   : PDFium: esperou 1376 ms, levou 9 ms
+11-09 00:44:59.793  2682  3256 I Prumo   : PDFium: esperou 798 ms, levou 2 ms
+11-09 00:45:05.452  2682  2682 I Prumo   : mensagem: 1 PDF imported.
+11-09 00:45:05.590  2682  2682 I Prumo   : mensagem: 1 PDF deleted.
+11-09 00:45:06.858  2682  3822 I Prumo   : PDFium: esperou 67 ms, levou 301 ms
+11-09 00:45:07.129  2682  3256 I Prumo   : PDFium: esperou 330 ms, levou 271 ms
+11-09 00:45:07.160  2682  3607 I Prumo   : PDFium: esperou 572 ms, levou 50 ms
+11-09 00:45:07.277  2682  3258 I Prumo   : PDFium: esperou 619 ms, levou 120 ms
+11-09 00:45:07.428  2682  3608 I Prumo   : PDFium: esperou 702 ms, levou 174 ms
+11-09 00:45:07.460  2682  3257 I Prumo   : PDFium: esperou 872 ms, levou 31 ms
+11-09 00:45:07.744  2682  2910 I TestRunner: finished: importFileAndDeleteWithUndo(br.com.prumopdf.AppTest)
+11-09 00:45:07.761  2682  2910 I TestRunner: started: sharedLibraryFileIsWritten(br.com.prumopdf.AppTest)
+11-09 00:45:07.835  2682  3822 I Prumo   : PDFium: esperou 570 ms, levou 406 ms
+11-09 00:45:07.886  2682  3256 I Prumo   : PDFium: esperou 734 ms, levou 22 ms
+11-09 00:45:07.914  2682  3607 I Prumo   : PDFium: esperou 703 ms, levou 50 ms
+11-09 00:45:08.164  2682  3258 I Prumo   : PDFium: esperou 648 ms, levou 237 ms
+11-09 00:45:08.401  2682  3608 I Prumo   : PDFium: esperou 733 ms, levou 240 ms
+11-09 00:45:08.464  2682  3822 I Prumo   : PDFium: esperou 566 ms, levou 62 ms
+11-09 00:45:08.481  2682  3607 I Prumo   : PDFium: esperou 565 ms, levou 1 ms
+11-09 00:45:08.495  2682  3258 I Prumo   : PDFium: esperou 317 ms, levou 14 ms
+11-09 00:45:08.954  2682  3256 I Prumo   : PDFium: esperou 329 ms, levou 0 ms
+11-09 00:45:12.455  2682  3258 I Prumo   : PDFium: esperou 155 ms, levou 645 ms
+11-09 00:45:12.528  2682  3822 I Prumo   : PDFium: esperou 863 ms, levou 7 ms
+11-09 00:45:13.594  2682  3608 I Prumo   : PDFium: esperou 56 ms, levou 497 ms
+11-09 00:45:14.364  2682  3822 I Prumo   : PDFium: esperou 523 ms, levou 776 ms
+11-09 00:45:14.498  2682  3258 I Prumo   : PDFium: esperou 1257 ms, levou 138 ms
+11-09 00:45:14.516  2682  3608 I Prumo   : PDFium: esperou 903 ms, levou 18 ms
+11-09 00:45:14.681  2682  2910 I TestRunner: finished: sharedLibraryFileIsWritten(br.com.prumopdf.AppTest)
+11-09 00:45:14.696  2682  2910 I TestRunner: started: thumbnailsLoadAtTwoSizesAtOnce(br.com.prumopdf.AppTest)
+11-09 00:45:16.565  2682  3258 I Prumo   : PDFium: esperou 431 ms, levou 5 ms
+11-09 00:45:18.656  2682  3258 I Prumo   : PDFium: esperou 0 ms, levou 410 ms
+11-09 00:45:19.920  2682  3258 I Prumo   : PDFium: esperou 32 ms, levou 476 ms
+11-09 00:45:21.408  2682  3607 I Prumo   : PDFium: esperou 15 ms, levou 652 ms
+11-09 00:45:21.411  2682  3258 I Prumo   : PDFium: esperou 631 ms, levou 23 ms
+11-09 00:45:22.101  2682  3607 I Prumo   : PDFium: esperou 32 ms, levou 659 ms
+11-09 00:45:22.101  2682  3258 I Prumo   : PDFium: esperou 592 ms, levou 76 ms
+11-09 00:45:22.218  2682  2910 I TestRunner: finished: thumbnailsLoadAtTwoSizesAtOnce(br.com.prumopdf.AppTest)
+11-09 00:45:22.483  2682  2910 I TestRunner: started: foldersOpen(br.com.prumopdf.AppTest)
+11-09 00:45:22.570  2682  3258 I Prumo   : PDFium: esperou 387 ms, levou 81 ms
+11-09 00:45:25.848  2682  2910 I TestRunner: finished: foldersOpen(br.com.prumopdf.AppTest)
+11-09 00:45:25.879  2682  2910 I TestRunner: started: openDocumentAndRead(br.com.prumopdf.AppTest)
+11-09 00:45:26.365  2682  3822 I Prumo   : PDFium: esperou 115 ms, levou 683 ms
+11-09 00:45:26.515  2682  3608 I Prumo   : PDFium: esperou 734 ms, levou 143 ms
+11-09 00:45:26.525  2682  3258 I Prumo   : PDFium: esperou 839 ms, levou 5 ms
+11-09 00:45:26.539  2682  3607 I Prumo   : PDFium: esperou 844 ms, levou 13 ms
+11-09 00:45:29.989  2682  3256 I Prumo   : PDFium: esperou 123 ms, levou 328 ms
+11-09 00:45:29.989  2682  3256 I Prumo   : miniatura de Prestação de serviços.pdf (178 px): 520 ms, ok
+11-09 00:45:30.232  2682  3259 I Prumo   : PDFium: esperou 468 ms, levou 226 ms
+11-09 00:45:30.232  2682  3259 I Prumo   : miniatura de Petição inicial.pdf (178 px): 762 ms, ok
+11-09 00:45:30.258  2682  3822 I Prumo   : PDFium: esperou 701 ms, levou 2 ms
+11-09 00:45:30.258  2682  3822 I Prumo   : miniatura de Contrato de locação.pdf (178 px): 786 ms, ok
+11-09 00:45:30.263  2682  3608 I Prumo   : PDFium: esperou 689 ms, levou 15 ms
+11-09 00:45:30.304  2682  4056 I Prumo   : PDFium: esperou 718 ms, levou 47 ms
+11-09 00:45:30.304  2682  4056 I Prumo   : miniatura de Laudo médico.pdf (178 px): 833 ms, ok
+11-09 00:45:30.340  2682  4058 I Prumo   : PDFium: esperou 761 ms, levou 40 ms
+11-09 00:45:30.340  2682  4058 I Prumo   : miniatura de Prontuário.pdf (178 px): 870 ms, ok
+11-09 00:45:30.379  2682  4059 I Prumo   : PDFium: esperou 794 ms, levou 40 ms
+11-09 00:45:30.380  2682  4059 I Prumo   : miniatura de Recibo de aluguel.pdf (178 px): 910 ms, ok
+11-09 00:45:30.407  2682  4057 I Prumo   : PDFium: esperou 832 ms, levou 30 ms
+11-09 00:45:30.407  2682  4057 I Prumo   : miniatura de Relatório anual 2026.pdf (178 px): 939 ms, ok
+11-09 00:45:30.426  2682  3258 I Prumo   : PDFium: esperou 649 ms, levou 0 ms
+11-09 00:45:30.428  2682  4055 I Prumo   : PDFium: esperou 359 ms, levou 1 ms
+11-09 00:45:30.428  2682  3607 I Prumo   : PDFium: esperou 846 ms, levou 23 ms
+11-09 00:45:30.486  2682  3258 I Prumo   : miniatura de Recibo de aluguel.pdf (504 px): 710 ms, ok
+11-09 00:45:31.070  2682  2910 I TestRunner: finished: openDocumentAndRead(br.com.prumopdf.AppTest)
+11-09 00:45:31.090  2682  2910 I TestRunner: started: analysisCountsPages(br.com.prumopdf.AppTest)
+11-09 00:45:31.259  2682  3607 I Prumo   : PDFium: esperou 555 ms, levou 191 ms
+11-09 00:45:31.312  2682  3608 I Prumo   : PDFium: esperou 697 ms, levou 48 ms
+11-09 00:45:37.664  2682  2910 I TestRunner: finished: analysisCountsPages(br.com.prumopdf.AppTest)
+11-09 00:45:37.670  2682  2910 I TestRunner: started: favoritesListShowsStarredDocuments(br.com.prumopdf.AppTest)
+11-09 00:45:41.388  2682  4059 I Prumo   : PDFium: esperou 39 ms, levou 310 ms
+11-09 00:45:41.388  2682  3607 I Prumo   : PDFium: esperou 331 ms, levou 0 ms
+11-09 00:45:42.265  2682  4055 I Prumo   : PDFium: esperou 100 ms, levou 772 ms
+11-09 00:45:42.265  2682  4055 I Prumo   : miniatura de Petição inicial.pdf (178 px): 976 ms, ok
+11-09 00:45:42.510  2682  2910 I TestRunner: finished: favoritesListShowsStarredDocuments(br.com.prumopdf.AppTest)
+11-09 00:45:42.541  2682  2910 I TestRunner: started: analysisFindsTextAndScannedPages(br.com.prumopdf.PdfOpsTest)
+11-09 00:45:42.684  2682  4057 I Prumo   : PDFium: esperou 818 ms, levou 474 ms
+11-09 00:45:42.684  2682  4057 I Prumo   : miniatura de Contrato de locação.pdf (178 px): 1386 ms, ok
+11-09 00:45:42.964  2682  4059 I Prumo   : PDFium: esperou 1310 ms, levou 229 ms
+11-09 00:45:42.971  2682  3607 I Prumo   : PDFium: esperou 1477 ms, levou 7 ms
+11-09 00:45:47.079  2682  2910 I TestRunner: finished: analysisFindsTextAndScannedPages(br.com.prumopdf.PdfOpsTest)
+11-09 00:45:47.116  2682  2910 I TestRunner: started: searchFindsTheWordWithRectangles(br.com.prumopdf.PdfOpsTest)
+11-09 00:45:47.465  2682  2910 I TestRunner: finished: searchFindsTheWordWithRectangles(br.com.prumopdf.PdfOpsTest)
+11-09 00:45:47.467  2682  2910 I TestRunner: started: removeExtractSplitMergeInsert(br.com.prumopdf.PdfOpsTest)
+11-09 00:45:51.937  2682  2910 I TestRunner: finished: removeExtractSplitMergeInsert(br.com.prumopdf.PdfOpsTest)
+11-09 00:45:51.941  2682  2910 I TestRunner: started: refusesToRemoveEveryPage(br.com.prumopdf.PdfOpsTest)
+11-09 00:45:52.015  2682  2910 I TestRunner: finished: refusesToRemoveEveryPage(br.com.prumopdf.PdfOpsTest)
+11-09 00:45:52.017  2682  2910 I TestRunner: started: arrangeReordersRotatesAndDeletes(br.com.prumopdf.PdfOpsTest)
+11-09 00:45:52.677  2682  2910 I TestRunner: finished: arrangeReordersRotatesAndDeletes(br.com.prumopdf.PdfOpsTest)
+11-09 00:45:52.679  2682  2910 I TestRunner: started: passwordProtectedPdf(br.com.prumopdf.PdfOpsTest)
+11-09 00:45:52.804  2682  2910 I TestRunner: finished: passwordProtectedPdf(br.com.prumopdf.PdfOpsTest)
+11-09 00:45:52.815  2682  2910 I TestRunner: started: organizeDragToReorderAndSave(br.com.prumopdf.PagesUiTest)
+11-09 00:45:54.926  2682  4055 I Prumo   : PDFium: esperou 0 ms, levou 306 ms
+11-09 00:46:01.165  2682  2682 I Prumo   : mensagem: Pages reorganized. Use “Undo last change” if you need to.
+11-09 00:46:02.247  2682  2910 I TestRunner: finished: organizeDragToReorderAndSave(br.com.prumopdf.PagesUiTest)
+11-09 00:46:02.252  2682  2910 I TestRunner: started: selectSeveralPdfsAndCombine(br.com.prumopdf.PagesUiTest)
+11-09 00:46:07.330  2682  4058 I Prumo   : miniatura de Prestação de serviços.pdf (178 px): 540 ms, ok
+11-09 00:46:07.855  2682  3258 I Prumo   : PDFium: esperou 554 ms, levou 500 ms
+11-09 00:46:07.856  2682  3258 I Prumo   : miniatura de Prontuário.pdf (178 px): 1063 ms, ok
+11-09 00:46:07.907  2682  3257 I Prumo   : PDFium: esperou 1055 ms, levou 51 ms
+11-09 00:46:07.907  2682  4059 I Prumo   : PDFium: esperou 1106 ms, levou 0 ms
+11-09 00:46:08.027  2682  3257 I Prumo   : miniatura de Laudo médico.pdf (178 px): 1227 ms, ok
+11-09 00:46:08.030  2682  4059 I Prumo   : miniatura de Contrato de locação.pdf (178 px): 1230 ms, ok
+11-09 00:46:09.339  2682  2682 I Prumo   : mensagem: Combined PDF: Combined PDF
+11-09 00:46:10.943  2682  2910 I TestRunner: finished: selectSeveralPdfsAndCombine(br.com.prumopdf.PagesUiTest)
+11-09 00:46:10.947  2682  2910 I TestRunner: started: readerSearchesTheDocument(br.com.prumopdf.PagesUiTest)
+11-09 00:46:12.770  2682  3258 I Prumo   : PDFium: esperou 0 ms, levou 527 ms
+11-09 00:46:12.785  2682  4058 I Prumo   : PDFium: esperou 522 ms, levou 15 ms
+11-09 00:46:16.863  2682  2910 I TestRunner: finished: readerSearchesTheDocument(br.com.prumopdf.PagesUiTest)
+11-09 00:46:16.924  2682  2910 I TestRunner: started: passwordProtectedPdfOpensWithThePassword(br.com.prumopdf.PagesUiTest)
+11-09 00:46:18.760  2682  3258 I Prumo   : PDFium: esperou 49 ms, levou 427 ms
+11-09 00:46:20.171  2682  2682 I Prumo   : mensagem: 1 PDF imported.
+11-09 00:46:22.207  2682  2910 I TestRunner: finished: passwordProtectedPdfOpensWithThePassword(br.com.prumopdf.PagesUiTest)
+11-09 00:46:22.208  2682  2910 I TestRunner: started: organizeRotateAndDeleteThenUndo(br.com.prumopdf.PagesUiTest)
+11-09 00:46:26.407  2682  2682 I Prumo   : mensagem: Pages reorganized. Use “Undo last change” if you need to.
+11-09 00:46:26.722  2682  2682 I Prumo   : mensagem: Last change undone.
+11-09 00:46:27.377  2682  2910 I TestRunner: finished: organizeRotateAndDeleteThenUndo(br.com.prumopdf.PagesUiTest)
+11-09 00:46:27.379  2682  2910 I TestRunner: started: swipeSelectsSeveralPagesToRemove(br.com.prumopdf.PagesUiTest)
+11-09 00:46:31.319  2682  3258 I Prumo   : PDFium: esperou 482 ms, levou 0 ms
+11-09 00:46:31.340  2682  2682 I Prumo   : mensagem: 3 pages removed. Use “Undo” if you need to.
+11-09 00:46:32.205  2682  2910 I TestRunner: finished: swipeSelectsSeveralPagesToRemove(br.com.prumopdf.PagesUiTest)
+11-09 00:46:32.208  2682  2910 I TestRunner: run finished: 21 tests, 0 failed, 0 ignored
+11-09 00:46:34.519  4544  4571 I TestRunner: run started: 1 tests
+11-09 00:46:34.521  4544  4571 I TestRunner: started: screens(br.com.prumopdf.ScreenshotTest)
+11-09 00:46:40.472  4544  4597 I Prumo   : miniatura de Laudo médico.pdf (178 px): 305 ms, ok
+11-09 00:46:40.506  4544  4594 I Prumo   : miniatura de Prestação de serviços.pdf (178 px): 340 ms, ok
+11-09 00:46:40.602  4544  4596 I Prumo   : PDFium: esperou 361 ms, levou 3 ms
+11-09 00:46:40.602  4544  4596 I Prumo   : miniatura de Contrato de locação.pdf (178 px): 434 ms, ok
+11-09 00:46:40.616  4544  4595 I Prumo   : miniatura de Petição inicial.pdf (178 px): 450 ms, ok
+11-09 00:47:47.548  4544  4571 I TestRunner: finished: screens(br.com.prumopdf.ScreenshotTest)
+11-09 00:47:47.554  4544  4571 I TestRunner: run finished: 1 tests, 0 failed, 0 ignored

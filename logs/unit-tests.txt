@@ -1,0 +1,54 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.8.2/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+Calculating task graph as no cached configuration is available for tasks: :app:testDebugUnitTest
+> Task :app:fetchPdfium
+> Task :app:preBuild
+> Task :app:preDebugBuild
+> Task :app:preDebugUnitTestBuild
+> Task :app:generateDebugResources FROM-CACHE
+> Task :app:generateDebugBuildConfig FROM-CACHE
+> Task :app:extractDebugSupportedLocales FROM-CACHE
+> Task :app:javaPreCompileDebug FROM-CACHE
+> Task :app:createDebugCompatibleScreenManifests
+> Task :app:mapDebugSourceSetPaths
+> Task :app:extractDeepLinksDebug FROM-CACHE
+> Task :app:generateDebugLocaleConfig FROM-CACHE
+> Task :app:packageDebugResources FROM-CACHE
+> Task :app:processDebugNavigationResources FROM-CACHE
+> Task :app:processDebugMainManifest FROM-CACHE
+> Task :app:compileDebugNavigationResources FROM-CACHE
+> Task :app:processDebugManifest FROM-CACHE
+> Task :app:processDebugManifestForPackage FROM-CACHE
+> Task :app:checkDebugAarMetadata
+> Task :app:javaPreCompileDebugUnitTest FROM-CACHE
+> Task :app:mergeDebugResources FROM-CACHE
+> Task :app:parseDebugLocalResources FROM-CACHE
+> Task :app:generateDebugRFile FROM-CACHE
+> Task :app:processDebugResources FROM-CACHE
+
+> Task :app:compileDebugKotlin
+w: file:///home/runner/work/prumo-pdf-android/prumo-pdf-android/app/src/main/kotlin/br/com/prumopdf/ui/PageTools.kt:314:87 'val Icons.Filled.RotateLeft: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.RotateLeft.
+w: file:///home/runner/work/prumo-pdf-android/prumo-pdf-android/app/src/main/kotlin/br/com/prumopdf/ui/PageTools.kt:316:35 'val Icons.Filled.RotateRight: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.RotateRight.
+w: file:///home/runner/work/prumo-pdf-android/prumo-pdf-android/app/src/main/kotlin/br/com/prumopdf/ui/PageTools.kt:366:84 'val Icons.Filled.KeyboardArrowLeft: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.KeyboardArrowLeft.
+w: file:///home/runner/work/prumo-pdf-android/prumo-pdf-android/app/src/main/kotlin/br/com/prumopdf/ui/PageTools.kt:367:97 'val Icons.Filled.KeyboardArrowRight: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.KeyboardArrowRight.
+w: file:///home/runner/work/prumo-pdf-android/prumo-pdf-android/app/src/main/kotlin/br/com/prumopdf/ui/Reader.kt:268:35 'val Icons.Filled.ViewSidebar: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.ViewSidebar.
+
+> Task :app:compressDebugJavaRes FROM-CACHE
+> Task :app:compileDebugJavaWithJavac
+> Task :app:bundleDebugClassesToRuntimeJar
+> Task :app:bundleDebugClassesToCompileJar
+
+> Task :app:compileDebugUnitTestKotlin
+w: file:///home/runner/work/prumo-pdf-android/prumo-pdf-android/app/src/test/kotlin/br/com/prumopdf/LibraryTest.kt:32:9 Only safe (?.) or non-null asserted (!!.) calls are allowed on a nullable receiver of type 'File?'.
+
+> Task :app:compileDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :app:compressDebugUnitTestJavaRes FROM-CACHE
+> Task :app:extractDebugUnitTestJavaRes
+> Task :app:testDebugUnitTest
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run_3-1794184749271.json
+
+[Incubating] Problems report is available at: file:///home/runner/work/prumo-pdf-android/prumo-pdf-android/build/reports/problems/problems-report.html
+
+BUILD SUCCESSFUL in 46s
+30 actionable tasks: 11 executed, 19 from cache
+Configuration cache entry stored.
