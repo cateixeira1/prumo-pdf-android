@@ -109,10 +109,10 @@ import kotlinx.coroutines.delay
 /** Abre o PDF (sem senha) para as telas de páginas; null enquanto abre. */
 @Composable
 private fun rememberPagesDoc(vm: AppViewModel, item: PdfItem): Pair<ReaderDoc?, Boolean> {
-    val opened = rememberOpenedDoc(vm, item, 0)
-    val doc = remember(opened) { (opened as? Pdfium.Opened.Ok)?.let { ReaderDoc(it.doc) } }
+    val result = rememberOpenedDoc(vm, item, 0)
+    val doc = result?.doc
     DisposableEffect(doc) { onDispose { doc?.close() } }
-    return doc to (opened != null && doc == null)
+    return doc to (result != null && doc == null)
 }
 
 /** Miniatura de uma página, com o giro a mais aplicado (em quartos de volta). */

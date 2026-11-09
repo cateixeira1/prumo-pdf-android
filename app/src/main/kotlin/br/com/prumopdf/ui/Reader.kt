@@ -120,7 +120,11 @@ class ReaderDoc(val doc: PdfDoc) {
         val key = "$index-$widthPx"
         cache.get(key)?.let { return it }
         return withContext(Pdfium.dispatcher) {
-            cache.get(key) ?: doc.renderPage(index, widthPx)?.also { cache.put(key, it) }
+            cache.get(key) ?: try {
+                doc.renderPage(index, widthPx)?.also { cache.put(key, it) }
+            } catch (_: IllegalStateException) {
+                null   // a tela saiu e o documento já foi fechado
+            }
         }
     }
 
@@ -128,7 +132,11 @@ class ReaderDoc(val doc: PdfDoc) {
     suspend fun search(query: String): List<SearchHit> = withContext(Pdfium.dispatcher) {
         val out = mutableListOf<SearchHit>()
         for (i in sizes.indices) {
-            val text = doc.text(i)
+            val text = try {
+                doc.text(i)
+            } catch (_: IllegalStateException) {
+                return@withContext out
+            }
             for (range in TextFold.find(text, query)) {
                 val rects = doc.textRects(i, range.first, range.last - range.first + 1)
                 if (rects.isNotEmpty()) out += SearchHit(i, rects)
@@ -143,11 +151,17 @@ class ReaderDoc(val doc: PdfDoc) {
     }
 }
 
-/** Abre o PDF para o leitor (pede a senha quando precisa). */
+/** PDF aberto (ou o motivo de não ter aberto) e, quando abriu, o documento pronto para desenhar. */
+data class OpenedReader(val opened: Pdfium.Opened, val doc: ReaderDoc?)
+
+/** Abre o PDF fora da tela principal (pede a senha quando precisa). */
 @Composable
-fun rememberOpenedDoc(vm: AppViewModel, item: PdfItem, attempt: Int): Pdfium.Opened? {
-    val opened by produceState<Pdfium.Opened?>(null, item.id, item.version, attempt) {
-        value = withContext(Dispatchers.IO) { Pdfium.open(item.file, vm.passwords[item.id]) }
+fun rememberOpenedDoc(vm: AppViewModel, item: PdfItem, attempt: Int): OpenedReader? {
+    val opened by produceState<OpenedReader?>(null, item.id, item.version, attempt) {
+        value = withContext(Dispatchers.IO) {
+            val o = Pdfium.open(item.file, vm.passwords[item.id])
+            OpenedReader(o, (o as? Pdfium.Opened.Ok)?.let { ReaderDoc(it.doc) })
+        }
     }
     return opened
 }
@@ -156,8 +170,10 @@ fun rememberOpenedDoc(vm: AppViewModel, item: PdfItem, attempt: Int): Pdfium.Ope
 fun ReaderScreen(vm: AppViewModel, snapshot: LibrarySnapshot, id: String, showBack: Boolean) {
     val item = remember(snapshot.revision, id) { vm.library.item(id) } ?: return
     var attempt by remember { mutableIntStateOf(0) }
-    val opened = rememberOpenedDoc(vm, item, attempt)
-    when (opened) {
+    val result = rememberOpenedDoc(vm, item, attempt)
+    val doc = result?.doc
+    DisposableEffect(doc) { onDispose { doc?.close() } }
+    when (val opened = result?.opened) {
         null -> Column(Modifier.fillMaxSize()) {
             ScreenHeader(item.name, showBack, { vm.back() }, large = false)
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
@@ -173,11 +189,7 @@ fun ReaderScreen(vm: AppViewModel, snapshot: LibrarySnapshot, id: String, showBa
             ScreenHeader(item.name, showBack, { vm.back() }, large = false)
             EmptyState(L("Não foi possível abrir este PDF."))
         }
-        is Pdfium.Opened.Ok -> {
-            val doc = remember(opened) { ReaderDoc(opened.doc) }
-            DisposableEffect(doc) { onDispose { doc.close() } }
-            ReaderContent(vm, item, doc, showBack)
-        }
+        is Pdfium.Opened.Ok -> if (doc != null) ReaderContent(vm, item, doc, showBack)
     }
 }
 

@@ -63,6 +63,19 @@ object Pdfium {
         }
     }
 
+    /** Põe [block] na fila da linha de execução do PDFium, sem esperar. */
+    fun post(block: () -> Unit) {
+        if (Thread.currentThread().name == THREAD) {
+            ready()
+            block()
+        } else {
+            executor.execute {
+                ready()
+                block()
+            }
+        }
+    }
+
     /** Roda [block] na linha de execução do PDFium e espera o resultado. */
     fun <T> call(block: () -> T): T {
         if (Thread.currentThread().name == THREAD) {
@@ -189,9 +202,14 @@ class PdfDoc internal constructor(internal val handle: Long) : Closeable {
 
     // endregion
 
+    /**
+     * Fecha sem esperar: o fechamento entra na fila da linha de execução do PDFium, depois do que já foi
+     * pedido para este documento. Esperar aqui travava o app quando a tela do leitor saía enquanto uma
+     * página ainda era desenhada (a tela principal esperava o PDFium, e o PDFium esperava a tela).
+     */
     override fun close() {
         if (closed) return
         closed = true
-        Pdfium.call { PdfiumNative.close(handle) }
+        Pdfium.post { PdfiumNative.close(handle) }
     }
 }
